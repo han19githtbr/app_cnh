@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Formação de Condutores · CNH Brasil</title>
+<meta name="description" content="Prepare-se para a CNH de forma interativa. Módulos, simulados, placas e infrações.">
+<meta name="theme-color" content="#0a0e1a">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="CNH Brasil">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icons/icon-192.png">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/styles.css">
+
+</head>
+<body>
+
+<header>
+  <div class="header-inner">
+    <div class="logo">🚦 <span>CNH</span>Brasil</div>
+    <div class="nav-tabs">
+      <button class="tab-btn active" onclick="showTab('modulos', this)">📚 Módulos</button>
+      <button class="tab-btn" onclick="showTab('simulado', this)">📝 Simulado</button>
+      <button class="tab-btn" onclick="showTab('placas', this)">🛑 Guia de Placas</button>
+      <button class="tab-btn" onclick="showTab('infracoes', this)">⚠️ Infrações</button>
+      <button class="tab-btn" onclick="showTab('direcao', this)">🛞 Direção Segura</button>
+    </div>
+    <button class="hamburger" id="hamburger-btn" onclick="toggleMobileNav()" aria-label="Menu">
+      <span></span><span></span><span></span>
+    </button>
+    <div class="progress-pill"><span class="pulse-dot"></span>Em andamento</div>
+  </div>
+</header>
+
+<!-- Mobile nav drawer -->
+<div class="mobile-nav-overlay" id="mobile-overlay" onclick="closeMobileNav()"></div>
+<div class="mobile-nav-drawer" id="mobile-drawer">
+  <button class="mobile-tab-btn active" onclick="showTab('modulos', this, true)">📚 Módulos</button>
+  <button class="mobile-tab-btn" onclick="showTab('simulado', this, true)">📝 Simulado</button>
+  <button class="mobile-tab-btn" onclick="showTab('placas', this, true)">🛑 Guia de Placas</button>
+  <button class="mobile-tab-btn" onclick="showTab('infracoes', this, true)">⚠️ Infrações</button>
+  <button class="mobile-tab-btn" onclick="showTab('direcao', this, true)">🛞 Direção Segura</button>
+</div>
+
+<main>
+
+  <!-- ── MÓDULOS ───────────────────────────────── -->
+  <div id="sec-modulos" class="section active">
+
+    <div id="modules-home">
+      <div class="hero-banner">
+        <div class="hero-tag">// Formação de Condutores · Detran Brasil</div>
+        <div class="hero-title">Prepare-se para a CNH<br>de forma interativa</div>
+        <div class="hero-sub">4 módulos · Quizzes · Simulado · Placas · Infrações · Direção defensiva</div>
+      </div>
+
+      <div class="stat-cards">
+        <div class="stat-card">
+          <div class="stat-number" id="stat-modules">4</div>
+          <div class="stat-label">Módulos de estudo</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-number" id="stat-questions">10+</div>
+          <div class="stat-label">Questões de simulado</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-number" id="stat-lessons">16</div>
+          <div class="stat-label">Aulas interativas</div>
+        </div>
+      </div>
+
+      <div class="modules-grid" id="modules-grid">
+        <!-- preenchido pelo app.js -->
+      </div>
+    </div>
+
+    <div id="module-content-area" style="display:none">
+      <button class="back-btn" onclick="backToModules()">← Voltar aos módulos</button>
+      <div id="module-content-inner"></div>
+    </div>
+
+  </div>
+
+  <!-- ── SIMULADO ──────────────────────────────── -->
+  <div id="sec-simulado" class="section">
+    <div class="section-title">📝 Simulado de Trânsito</div>
+    <div class="section-sub">Questões no estilo do exame do Detran · 45 minutos</div>
+
+    <div class="simulado-container">
+      <div id="sim-start-screen">
+        <div class="concept-card" style="margin-bottom:1rem">
+          <div class="concept-title">ℹ️ Como funciona o exame real?</div>
+          <div class="concept-body">
+            O exame teórico do Detran tem <strong>30 questões</strong> objetivas.
+            Para aprovação, são necessários <strong>21 acertos</strong> (70%).
+            O tempo é de <strong>45 minutos</strong>. As questões abordam sinalização,
+            infrações, direção defensiva e meio ambiente.
+          </div>
+        </div>
+        <div class="highlight-box">
+          <strong>Dica:</strong> O candidato só pode errar <strong>9 questões</strong>.
+          Fique atento às questões sobre álcool e velocidade — são as mais cobradas!
+        </div>
+        <button class="sim-btn sim-btn-primary" onclick="startSimulado()"
+          style="font-size:.85rem;padding:.8rem 2rem;margin-top:1rem">
+          ▶ Iniciar Simulado
+        </button>
+      </div>
+      <div id="sim-quiz-area"   style="display:none"></div>
+      <div id="sim-result-area" style="display:none"></div>
+    </div>
+  </div>
+
+  <!-- ── GUIA DE PLACAS ────────────────────────── -->
+  <div id="sec-placas" class="section">
+    <div class="section-title">🛑 Guia Completo de Placas</div>
+    <div class="section-sub">Clique em qualquer placa para ver detalhes e exemplos</div>
+
+    <div style="display:flex;gap:.5rem;margin-bottom:1.5rem;flex-wrap:wrap">
+      <button class="scenario-btn active" onclick="filterPlacas('todas', this)">Todas</button>
+      <button class="scenario-btn" onclick="filterPlacas('regulamentacao', this)">Regulamentação</button>
+      <button class="scenario-btn" onclick="filterPlacas('advertencia', this)">Advertência</button>
+      <button class="scenario-btn" onclick="filterPlacas('indicacao', this)">Indicação</button>
+    </div>
+
+    <div id="placas-grid" class="signs-grid"></div>
+
+    <div id="placa-detail" style="display:none;margin-top:1.5rem">
+      <div class="concept-card">
+        <div class="concept-title" id="pd-title"></div>
+        <div class="concept-body"  id="pd-body"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── INFRAÇÕES ─────────────────────────────── -->
+  <div id="sec-infracoes" class="section">
+    <div class="section-title">⚠️ Infrações e Penalidades</div>
+    <div class="section-sub">Sistema de pontos e multas conforme o CTB</div>
+
+    <div class="concept-card" style="margin-bottom:1.5rem">
+      <div class="concept-title">📊 Sistema de Pontos da CNH</div>
+      <div class="concept-body">
+        O condutor que acumular <strong>20 pontos</strong> em 12 meses tem a CNH suspensa
+        por 6 meses a 1 ano. Motoristas profissionais têm limite de <strong>30 pontos</strong>.
+        Com 40+ pontos em 12 meses, independente da categoria, ocorre suspensão imediata.
+      </div>
+    </div>
+
+    <div style="overflow-x:auto">
+      <table class="infraction-table">
+        <thead>
+          <tr>
+            <th>Infração</th>
+            <th>Natureza</th>
+            <th>Pontos</th>
+            <th>Multa (R$)</th>
+            <th>Medidas</th>
+          </tr>
+        </thead>
+        <tbody id="infraction-tbody">
+          <!-- preenchido pelo app.js -->
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- ── DIREÇÃO SEGURA ─────────────────────────── -->
+  <div id="sec-direcao" class="section">
+    <div class="section-title">🛞 Direção Segura</div>
+    <div class="section-sub">Técnicas de direção defensiva e situações de risco</div>
+
+    <div class="modules-grid" id="direcao-cards-grid"
+      style="grid-template-columns:repeat(auto-fill,minmax(250px,1fr))">
+      <!-- preenchido pelo app.js -->
+    </div>
+
+    <div id="direcao-detail" style="display:none;margin-top:1.5rem"></div>
+  </div>
+
+</main>
+
+<!-- JavaScript externo — carregado após o DOM -->
+<script src="js/index.js"></script>
+<script>
+  // ── Mobile nav ──────────────────────────────────
+  function toggleMobileNav() {
+    const btn = document.getElementById('hamburger-btn');
+    const drawer = document.getElementById('mobile-drawer');
+    const overlay = document.getElementById('mobile-overlay');
+    const open = drawer.classList.toggle('open');
+    overlay.classList.toggle('open', open);
+    btn.classList.toggle('open', open);
+  }
+  function closeMobileNav() {
+    document.getElementById('hamburger-btn').classList.remove('open');
+    document.getElementById('mobile-drawer').classList.remove('open');
+    document.getElementById('mobile-overlay').classList.remove('open');
+  }
+
+  // Patch showTab to also sync mobile buttons and close drawer
+  const _origShowTab = showTab;
+  window.showTab = function(id, el, fromMobile = false) {
+    _origShowTab(id, el);
+    // sync desktop tabs
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll(`.tab-btn`).forEach(b => {
+      if (b.getAttribute('onclick') && b.getAttribute('onclick').includes(`'${id}'`)) b.classList.add('active');
+    });
+    // sync mobile tabs
+    document.querySelectorAll('.mobile-tab-btn').forEach(b => b.classList.remove('active'));
+    if (el) el.classList.add('active');
+    if (fromMobile) closeMobileNav();
+  };
+
+  // ── Service Worker ───────────────────────────────
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('sw.js').catch(() => {});
+    });
+  }
+</script>
+</body>
+</html>
