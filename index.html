@@ -13,7 +13,6 @@
 <link rel="apple-touch-icon" href="icons/icon-192.png">
 <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="css/styles.css">
-
 </head>
 <body>
 
@@ -26,6 +25,7 @@
       <button class="tab-btn" onclick="showTab('placas', this)">🛑 Guia de Placas</button>
       <button class="tab-btn" onclick="showTab('infracoes', this)">⚠️ Infrações</button>
       <button class="tab-btn" onclick="showTab('direcao', this)">🛞 Direção Segura</button>
+      <button class="tab-btn sim-tab-btn" onclick="showTab('transito', this)">🎮 Simulador</button>
     </div>
     <button class="hamburger" id="hamburger-btn" onclick="toggleMobileNav()" aria-label="Menu">
       <span></span><span></span><span></span>
@@ -42,20 +42,19 @@
   <button class="mobile-tab-btn" onclick="showTab('placas', this, true)">🛑 Guia de Placas</button>
   <button class="mobile-tab-btn" onclick="showTab('infracoes', this, true)">⚠️ Infrações</button>
   <button class="mobile-tab-btn" onclick="showTab('direcao', this, true)">🛞 Direção Segura</button>
+  <button class="mobile-tab-btn" onclick="showTab('transito', this, true)">🎮 Simulador de Trânsito</button>
 </div>
 
 <main>
 
   <!-- ── MÓDULOS ───────────────────────────────── -->
   <div id="sec-modulos" class="section active">
-
     <div id="modules-home">
       <div class="hero-banner">
         <div class="hero-tag">// Formação de Condutores · Detran Brasil</div>
         <div class="hero-title">Prepare-se para a CNH<br>de forma interativa</div>
         <div class="hero-sub">4 módulos · Quizzes · Simulado · Placas · Infrações · Direção defensiva</div>
       </div>
-
       <div class="stat-cards">
         <div class="stat-card">
           <div class="stat-number" id="stat-modules">4</div>
@@ -70,24 +69,18 @@
           <div class="stat-label">Aulas interativas</div>
         </div>
       </div>
-
-      <div class="modules-grid" id="modules-grid">
-        <!-- preenchido pelo app.js -->
-      </div>
+      <div class="modules-grid" id="modules-grid"></div>
     </div>
-
     <div id="module-content-area" style="display:none">
       <button class="back-btn" onclick="backToModules()">← Voltar aos módulos</button>
       <div id="module-content-inner"></div>
     </div>
-
   </div>
 
   <!-- ── SIMULADO ──────────────────────────────── -->
   <div id="sec-simulado" class="section">
     <div class="section-title">📝 Simulado de Trânsito</div>
     <div class="section-sub">Questões no estilo do exame do Detran · 45 minutos</div>
-
     <div class="simulado-container">
       <div id="sim-start-screen">
         <div class="concept-card" style="margin-bottom:1rem">
@@ -117,16 +110,13 @@
   <div id="sec-placas" class="section">
     <div class="section-title">🛑 Guia Completo de Placas</div>
     <div class="section-sub">Clique em qualquer placa para ver detalhes e exemplos</div>
-
     <div style="display:flex;gap:.5rem;margin-bottom:1.5rem;flex-wrap:wrap">
       <button class="scenario-btn active" onclick="filterPlacas('todas', this)">Todas</button>
       <button class="scenario-btn" onclick="filterPlacas('regulamentacao', this)">Regulamentação</button>
       <button class="scenario-btn" onclick="filterPlacas('advertencia', this)">Advertência</button>
       <button class="scenario-btn" onclick="filterPlacas('indicacao', this)">Indicação</button>
     </div>
-
     <div id="placas-grid" class="signs-grid"></div>
-
     <div id="placa-detail" style="display:none;margin-top:1.5rem">
       <div class="concept-card">
         <div class="concept-title" id="pd-title"></div>
@@ -139,7 +129,6 @@
   <div id="sec-infracoes" class="section">
     <div class="section-title">⚠️ Infrações e Penalidades</div>
     <div class="section-sub">Sistema de pontos e multas conforme o CTB</div>
-
     <div class="concept-card" style="margin-bottom:1.5rem">
       <div class="concept-title">📊 Sistema de Pontos da CNH</div>
       <div class="concept-body">
@@ -148,21 +137,14 @@
         Com 40+ pontos em 12 meses, independente da categoria, ocorre suspensão imediata.
       </div>
     </div>
-
     <div style="overflow-x:auto">
       <table class="infraction-table">
         <thead>
           <tr>
-            <th>Infração</th>
-            <th>Natureza</th>
-            <th>Pontos</th>
-            <th>Multa (R$)</th>
-            <th>Medidas</th>
+            <th>Infração</th><th>Natureza</th><th>Pontos</th><th>Multa (R$)</th><th>Medidas</th>
           </tr>
         </thead>
-        <tbody id="infraction-tbody">
-          <!-- preenchido pelo app.js -->
-        </tbody>
+        <tbody id="infraction-tbody"></tbody>
       </table>
     </div>
   </div>
@@ -171,18 +153,136 @@
   <div id="sec-direcao" class="section">
     <div class="section-title">🛞 Direção Segura</div>
     <div class="section-sub">Técnicas de direção defensiva e situações de risco</div>
-
     <div class="modules-grid" id="direcao-cards-grid"
-      style="grid-template-columns:repeat(auto-fill,minmax(250px,1fr))">
-      <!-- preenchido pelo app.js -->
+      style="grid-template-columns:repeat(auto-fill,minmax(250px,1fr))"></div>
+    <div id="direcao-detail" style="display:none;margin-top:1.5rem"></div>
+  </div>
+
+  <!-- ── SIMULADOR DE TRÂNSITO ──────────────────── -->
+  <div id="sec-transito" class="section section-sim">
+
+    <div class="sim-page-header">
+      <div>
+        <div class="section-title" style="margin-bottom:.2rem">🎮 Simulador de Trânsito</div>
+        <div class="section-sub" style="margin-bottom:0">Observe veículos reais, pedestres, semáforos e como as regras do CTB funcionam na prática</div>
+      </div>
+      <div class="sim-hdr-controls">
+        <button class="sim-ctrl-btn sim-ctrl-active" id="btn-play" onclick="tsTogglePlay()">⏸ Pausar</button>
+        <select class="sim-speed-sel" id="speed-sel" onchange="tsSetSpeed(this.value)">
+          <option value="0.5">0.5×</option>
+          <option value="1" selected>1×</option>
+          <option value="2">2×</option>
+          <option value="3">3×</option>
+        </select>
+        <button class="sim-ctrl-btn" onclick="tsCycleWeather()">🌤 Clima</button>
+        <button class="sim-ctrl-btn" onclick="tsCycleTime()">🕐 Horário</button>
+        <button class="sim-ctrl-btn sim-ctrl-danger" id="btn-chaos" onclick="tsToggleChaos()">💥 Caos</button>
+      </div>
     </div>
 
-    <div id="direcao-detail" style="display:none;margin-top:1.5rem"></div>
+    <div class="ts-layout">
+
+      <!-- Canvas -->
+      <div class="ts-canvas-wrap">
+        <canvas id="ts-canvas"></canvas>
+        <div class="ts-time-badge" id="ts-time-badge">🕐 08:00</div>
+        <div class="ts-weather-badge" id="ts-weather-badge">☀️ Ensolarado · 28°C</div>
+      </div>
+
+      <!-- Side panel -->
+      <div class="ts-side-panel">
+
+        <!-- Stats -->
+        <div class="ts-panel-section">
+          <div class="ts-panel-label">📊 Estatísticas em Tempo Real</div>
+          <div class="ts-stats-grid">
+            <div class="ts-stat cyan"><div class="ts-stat-val" id="ts-s-vehicles">0</div><div class="ts-stat-lbl">Veículos</div></div>
+            <div class="ts-stat green"><div class="ts-stat-val" id="ts-s-pedestrians">0</div><div class="ts-stat-lbl">Pedestres</div></div>
+            <div class="ts-stat red"><div class="ts-stat-val" id="ts-s-violations">0</div><div class="ts-stat-lbl">Infrações</div></div>
+            <div class="ts-stat yellow"><div class="ts-stat-val" id="ts-s-accidents">0</div><div class="ts-stat-lbl">Acidentes</div></div>
+          </div>
+        </div>
+
+        <!-- Event log -->
+        <div class="ts-panel-section">
+          <div class="ts-panel-label">📋 Log de Eventos</div>
+          <div class="ts-event-log" id="ts-event-log">
+            <div class="ts-ev-item ts-ev-info">
+              <span class="ts-ev-icon">ℹ️</span>
+              <span class="ts-ev-time">08:00</span>
+              <span>Simulador iniciado. Observe as regras de trânsito!</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Controls -->
+        <div class="ts-panel-section">
+          <div class="ts-panel-label">🎮 Controles de Cenário</div>
+          <div class="ts-ctrl-group">
+            <div class="ts-ctrl-label">Clima</div>
+            <div class="ts-btn-row">
+              <button class="ts-sm-btn ts-sm-on" id="tw-sunny"  onclick="tsSetWeather('sunny')">☀️ Sol</button>
+              <button class="ts-sm-btn"           id="tw-rain"   onclick="tsSetWeather('rain')">🌧 Chuva</button>
+              <button class="ts-sm-btn"           id="tw-storm"  onclick="tsSetWeather('storm')">⛈ Tempestade</button>
+              <button class="ts-sm-btn"           id="tw-fog"    onclick="tsSetWeather('fog')">🌫 Neblina</button>
+              <button class="ts-sm-btn"           id="tw-hot"    onclick="tsSetWeather('hot')">🌡 Calor</button>
+            </div>
+          </div>
+          <div class="ts-ctrl-group">
+            <div class="ts-ctrl-label">Período do Dia</div>
+            <div class="ts-btn-row">
+              <button class="ts-sm-btn"          id="tt-dawn"  onclick="tsSetTime('dawn')">🌅 Amanhecer</button>
+              <button class="ts-sm-btn ts-sm-on" id="tt-day"   onclick="tsSetTime('day')">☀️ Dia</button>
+              <button class="ts-sm-btn"          id="tt-dusk"  onclick="tsSetTime('dusk')">🌆 Entardecer</button>
+              <button class="ts-sm-btn"          id="tt-night" onclick="tsSetTime('night')">🌙 Noite</button>
+            </div>
+          </div>
+          <div class="ts-ctrl-group">
+            <div class="ts-ctrl-label">Forçar Infrações</div>
+            <div class="ts-btn-row">
+              <button class="ts-sm-btn" onclick="tsForceEvent('redlight')">🔴 Avançar Sinal</button>
+              <button class="ts-sm-btn" onclick="tsForceEvent('speed')">💨 Excesso Veloc.</button>
+              <button class="ts-sm-btn" onclick="tsForceEvent('ped')">🚶 Ped. Imprudente</button>
+              <button class="ts-sm-btn" onclick="tsForceEvent('park')">🅿 Estac. Proibido</button>
+              <button class="ts-sm-btn" onclick="tsForceEvent('drunk')">🍺 Embriagado</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Legend -->
+        <div class="ts-panel-section">
+          <div class="ts-panel-label">🗺 Legenda</div>
+          <div class="ts-legend">
+            <div class="ts-leg-row"><span class="ts-leg-dot" style="background:#3b82f6"></span>Carro normal</div>
+            <div class="ts-leg-row"><span class="ts-leg-dot" style="background:#ef4444"></span>Veículo infrator</div>
+            <div class="ts-leg-row"><span class="ts-leg-dot" style="background:#f59e0b"></span>Motocicleta</div>
+            <div class="ts-leg-row"><span class="ts-leg-dot" style="background:#8b5cf6"></span>Ônibus / Caminhão</div>
+            <div class="ts-leg-row"><span class="ts-leg-dot" style="background:#22c55e"></span>Pedestre seguro</div>
+            <div class="ts-leg-row"><span class="ts-leg-dot" style="background:#f97316"></span>Pedestre imprudente</div>
+            <div class="ts-leg-row"><span class="ts-leg-rect" style="background:repeating-linear-gradient(90deg,#fbbf24 0,#fbbf24 8px,transparent 8px,transparent 16px)"></span>Faixa de pedestre</div>
+            <div class="ts-leg-row"><span class="ts-leg-rect" style="background:#ef444466"></span>Estacionamento proibido</div>
+            <div class="ts-leg-row"><span class="ts-leg-rect" style="background:#a8ff3e55"></span>Zona de carga e descarga</div>
+          </div>
+        </div>
+
+        <!-- CTB Tip -->
+        <div class="ts-panel-section">
+          <div class="ts-panel-label">📖 Dica CTB</div>
+          <div id="ts-ctb-tip" style="font-size:.74rem;line-height:1.65;color:var(--muted)">
+            Aguardando infração para exibir o artigo do CTB aplicável...
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- Floating notification -->
+    <div id="ts-notif" class="ts-notif"></div>
+
   </div>
 
 </main>
 
-<!-- JavaScript externo — carregado após o DOM -->
 <script src="js/index.js"></script>
 <script>
   // ── Mobile nav ──────────────────────────────────
@@ -200,22 +300,21 @@
     document.getElementById('mobile-overlay').classList.remove('open');
   }
 
-  // Patch showTab to also sync mobile buttons and close drawer
   const _origShowTab = showTab;
   window.showTab = function(id, el, fromMobile = false) {
     _origShowTab(id, el);
-    // sync desktop tabs
     document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-    document.querySelectorAll(`.tab-btn`).forEach(b => {
+    document.querySelectorAll('.tab-btn').forEach(b => {
       if (b.getAttribute('onclick') && b.getAttribute('onclick').includes(`'${id}'`)) b.classList.add('active');
     });
-    // sync mobile tabs
     document.querySelectorAll('.mobile-tab-btn').forEach(b => b.classList.remove('active'));
     if (el) el.classList.add('active');
     if (fromMobile) closeMobileNav();
+
+    // Init simulator when tab opens for the first time
+    if (id === 'transito') tsInitIfNeeded();
   };
 
-  // ── Service Worker ───────────────────────────────
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
       navigator.serviceWorker.register('sw.js').catch(() => {});
