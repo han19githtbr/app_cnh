@@ -603,7 +603,8 @@ main { max-width: 1400px; margin: 0 auto; padding: 2rem; }
 .sim-ctrl-active { background: var(--accent3) !important; color: #000 !important; border-color: var(--accent3) !important; }
 .sim-ctrl-danger { border-color: rgba(239,68,68,.35); }
 .sim-ctrl-danger:hover, .sim-ctrl-danger.sim-ctrl-active { background: var(--danger) !important; color: #fff !important; border-color: var(--danger) !important; }
-.sim-speed-sel {
+.sim-speed-sel,
+.sim-ctrl-select {
   background: var(--surface2);
   border: 1px solid var(--border);
   color: var(--text);
@@ -613,6 +614,24 @@ main { max-width: 1400px; margin: 0 auto; padding: 2rem; }
   font-size: .76rem;
   cursor: pointer;
   outline: none;
+}
+
+.ts-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .5rem;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+.ts-toolbar-group {
+  display: flex;
+  align-items: center;
+  gap: .35rem;
+}
+.ts-toolbar-label {
+  font-size: .72rem;
+  color: var(--muted);
+  font-family: 'DM Mono', monospace;
 }
 
 /* Main 2-column layout */

@@ -25,6 +25,7 @@
       <button class="tab-btn" onclick="showTab('placas', this)">🛑 Guia de Placas</button>
       <button class="tab-btn" onclick="showTab('infracoes', this)">⚠️ Infrações</button>
       <button class="tab-btn" onclick="showTab('direcao', this)">🛞 Direção Segura</button>
+      <button class="tab-btn visual-tab-btn" onclick="showTab('visual', this)">🖼️ Visual</button>
       <button class="tab-btn sim-tab-btn" onclick="showTab('transito', this)">🎮 Simulador</button>
     </div>
     <button class="hamburger" id="hamburger-btn" onclick="toggleMobileNav()" aria-label="Menu">
@@ -42,6 +43,7 @@
   <button class="mobile-tab-btn" onclick="showTab('placas', this, true)">🛑 Guia de Placas</button>
   <button class="mobile-tab-btn" onclick="showTab('infracoes', this, true)">⚠️ Infrações</button>
   <button class="mobile-tab-btn" onclick="showTab('direcao', this, true)">🛞 Direção Segura</button>
+  <button class="mobile-tab-btn" onclick="showTab('visual', this, true)">🖼️ Guia Visual</button>
   <button class="mobile-tab-btn" onclick="showTab('transito', this, true)">🎮 Simulador de Trânsito</button>
 </div>
 
@@ -53,7 +55,7 @@
       <div class="hero-banner">
         <div class="hero-tag">// Formação de Condutores · Detran Brasil</div>
         <div class="hero-title">Prepare-se para a CNH<br>de forma interativa</div>
-        <div class="hero-sub">4 módulos · Quizzes · Simulado · Placas · Infrações · Direção defensiva</div>
+        <div class="hero-sub">4 módulos · Quizzes · Simulado · Placas · Infrações · Direção defensiva · Guia Visual</div>
       </div>
       <div class="stat-cards">
         <div class="stat-card">
@@ -67,6 +69,10 @@
         <div class="stat-card">
           <div class="stat-number" id="stat-lessons">16</div>
           <div class="stat-label">Aulas interativas</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-number">15+</div>
+          <div class="stat-label">Cenas visuais</div>
         </div>
       </div>
       <div class="modules-grid" id="modules-grid"></div>
@@ -155,28 +161,52 @@
     <div class="section-sub">Técnicas de direção defensiva e situações de risco</div>
     <div class="modules-grid" id="direcao-cards-grid"
       style="grid-template-columns:repeat(auto-fill,minmax(250px,1fr))"></div>
-    <div id="direcao-detail" style="display:none;margin-top:1.5rem"></div>
+    <div id="direcao-detail" style="display:none;margin-top:1.5rem">
+      <button class="back-btn" onclick="document.getElementById('direcao-detail').style.display='none'">← Voltar</button>
+    </div>
+  </div>
+
+  <!-- ── GUIA VISUAL ────────────────────────────── -->
+  <div id="sec-visual" class="section">
+    <!-- Filled dynamically by visual-scenes.js renderVisualModule() -->
   </div>
 
   <!-- ── SIMULADOR DE TRÂNSITO ──────────────────── -->
-  <div id="sec-transito" class="section section-sim">
+  <div id="sec-transito" class="section">
+    <div class="section-title">🎮 Simulador de Trânsito</div>
+    <div class="section-sub">Observe as regras do CTB em tempo real · Clique em veículos para detalhes</div>
 
-    <div class="sim-page-header">
-      <div>
-        <div class="section-title" style="margin-bottom:.2rem">🎮 Simulador de Trânsito</div>
-        <div class="section-sub" style="margin-bottom:0">Observe veículos reais, pedestres, semáforos e como as regras do CTB funcionam na prática</div>
-      </div>
-      <div class="sim-hdr-controls">
-        <button class="sim-ctrl-btn sim-ctrl-active" id="btn-play" onclick="tsTogglePlay()">⏸ Pausar</button>
-        <select class="sim-speed-sel" id="speed-sel" onchange="tsSetSpeed(this.value)">
-          <option value="0.5">0.5×</option>
-          <option value="1" selected>1×</option>
-          <option value="2">2×</option>
-          <option value="3">3×</option>
+    <div class="ts-toolbar">
+      <div style="display:flex;gap:.5rem;align-items:center;flex-wrap:wrap">
+        <button class="sim-ctrl-btn" id="btn-start-ts" onclick="tsToggleRun()">▶ Iniciar</button>
+        <button class="sim-ctrl-btn" onclick="tsReset()">↺ Reiniciar</button>
+        <select class="sim-ctrl-select" onchange="tsSetSpeed(this.value)" id="ts-speed-sel">
+          <option value="0.5">🐢 0.5×</option>
+          <option value="1" selected>▶ 1×</option>
+          <option value="2">⚡ 2×</option>
+          <option value="3">🚀 3×</option>
         </select>
-        <button class="sim-ctrl-btn" onclick="tsCycleWeather()">🌤 Clima</button>
-        <button class="sim-ctrl-btn" onclick="tsCycleTime()">🕐 Horário</button>
-        <button class="sim-ctrl-btn sim-ctrl-danger" id="btn-chaos" onclick="tsToggleChaos()">💥 Caos</button>
+        <button class="sim-ctrl-btn" onclick="tsToggleAudio()" id="btn-sound">🔊 Som</button>
+        <!--<button class="sim-ctrl-btn" onclick="tsToggleVoice()" id="btn-voice">🗣️ Voz</button>-->
+        <div class="ts-toolbar-group">
+          <label class="ts-toolbar-label" for="ts-map-mode-sel">Mapa</label>
+          <select class="sim-ctrl-select" onchange="tsSetMapMode(this.value)" id="ts-map-mode-sel">
+            <option value="city">Cidade</option>
+            <option value="urban">Zona Urbana</option>
+            <option value="interior">Interior</option>
+            <option value="forest">Mais Árvores</option>
+            <option value="quiet">Menos Movimentação</option>
+          </select>
+        </div>
+        <div class="ts-toolbar-group">
+          <button class="sim-ctrl-btn" onclick="tsSetZoom(tsZoom - 0.15)">➖</button>
+          <button class="sim-ctrl-btn" onclick="tsSetZoom(1)">1×</button>
+          <button class="sim-ctrl-btn" onclick="tsSetZoom(tsZoom + 0.15)">➕</button>
+        </div>
+        <div class="ts-toolbar-group">
+          <span class="ts-toolbar-label">Zoom</span>
+          <span id="ts-zoom-label" class="ts-toolbar-label">1.00×</span>
+        </div>
       </div>
     </div>
 
@@ -291,6 +321,7 @@
 </main>
 
 <script src="js/index.js"></script>
+<script src="js/visual-scenes.js"></script>
 <script>
   // ── Mobile nav ──────────────────────────────────
   function toggleMobileNav() {
@@ -320,6 +351,8 @@
 
     // Init simulator when tab opens for the first time
     if (id === 'transito') tsInitIfNeeded();
+    // Init visual module when tab opens
+    if (id === 'visual') renderVisualModule();
   };
 
   if ('serviceWorker' in navigator) {

@@ -578,6 +578,44 @@ let tsVehicles = [], tsPedestrians = [], tsTrafficLights = [], tsParticles = [];
 let tsRoads = { h:[], v:[], highway:null };
 let tsIntersections=[], tsCrosswalks=[], tsParkingZones=[], tsLoadingZones=[];
 let tsSchoolZones=[], tsSpeedBumps=[];
+let tsTrees = [];
+let tsZoom = 1;
+let tsMapMode = 'city';
+let tsMapState = null;
+let tsAudioEnabled = false;
+let tsVoiceEnabled = false;
+let tsAudioCtx = null;
+let tsAmbientGain = null;
+let tsAmbientNoise = null;
+let tsAmbientHum = null;
+
+const TS_MAP_MODES = {
+  city: {
+    label:'Cidade', 
+    h:[0.24,0.48,0.72], v:[0.2,0.5,0.78], highway:true,
+    buildings:10, trees:0.25, trafficFactor:1.0, spawnRate:1.0, maxVehicles:42, lights:6
+  },
+  urban: {
+    label:'Zona Urbana', 
+    h:[0.3,0.6], v:[0.28,0.72], highway:false,
+    buildings:8, trees:0.35, trafficFactor:0.9, spawnRate:1.2, maxVehicles:34, lights:5
+  },
+  interior: {
+    label:'Interior', 
+    h:[0.4], v:[0.63], highway:false,
+    buildings:4, trees:0.75, trafficFactor:0.55, spawnRate:2.4, maxVehicles:24, lights:2
+  },
+  forest: {
+    label:'Mais Árvores', 
+    h:[0.34,0.66], v:[0.55], highway:false,
+    buildings:3, trees:0.85, trafficFactor:0.55, spawnRate:2.2, maxVehicles:24, lights:3
+  },
+  quiet: {
+    label:'Menos Movimentação', 
+    h:[0.36,0.58], v:[0.48], highway:false,
+    buildings:4, trees:0.65, trafficFactor:0.6, spawnRate:2.2, maxVehicles:28, lights:3
+  }
+};
 
 // ── Contadores ────────────────────────────────────
 let tsTotalViolations = 0;
@@ -762,6 +800,9 @@ function tsApplyViolation(vehicle, ruleId, extraCtx) {
   // Floating notification com penalidade
   const msg = `${rule.icon} ${rule.art} · R$${rule.fine.toFixed(2)} · ${rule.pts} pontos${rule.extra?'\n'+rule.extra:''}`;
   tsShowNotif(msg, rule.gravity.includes('GRAVÍSSIMA')?'danger':'warn');
+  if(tsVoiceEnabled){
+    tsSpeak(`${rule.desc}. Multa de ${rule.fine.toFixed(0).replace('.',',')} reais. ${rule.extra || ''}`);
+  }
 
   // Marcar veículo
   if (vehicle) {
@@ -804,6 +845,7 @@ function tsInitIfNeeded(){
   tsCanvas.addEventListener('click',tsOnCanvasClick);
   tsCanvas.addEventListener('mousemove',tsOnCanvasHover);
   tsResize();
+  tsUpdateControls();
 }
 
 function tsResize(){
@@ -819,9 +861,11 @@ function tsResize(){
 // ── Layout ────────────────────────────────────────
 function tsBuildLayout(){
   const W=tsW,H=tsH;
-  tsRoads.h=[0.28,0.55,0.78].map(f=>({y:H*f,laneW:34,lanes:2,speedLimit:60}));
-  tsRoads.v=[0.22,0.5,0.78].map(f=>({x:W*f,laneW:34,lanes:2,speedLimit:60}));
-  tsRoads.highway={x:W*0.87,laneW:38,lanes:3,speedLimit:110};
+  tsMapState = TS_MAP_MODES[tsMapMode] || TS_MAP_MODES.city;
+
+  tsRoads.h = tsMapState.h.map(f=>({y:H*f,laneW:32,lanes:2,speedLimit:tsMapState.highway?60:50}));
+  tsRoads.v = tsMapState.v.map(f=>({x:W*f,laneW:32,lanes:2,speedLimit:tsMapState.highway?60:50}));
+  tsRoads.highway = tsMapState.highway ? {x:W*0.87,laneW:36,lanes:3,speedLimit:110} : null;
 
   tsIntersections=[];
   tsRoads.h.forEach(hr=>tsRoads.v.forEach(vr=>{
@@ -834,12 +878,10 @@ function tsBuildLayout(){
     tsCrosswalks.push({x:int.x,y:int.y-55,w:7,h:34,dir:'v',int});
   });
 
-  // Zona escolar (30km/h)
   tsSchoolZones=[
     {x:W*.22-80,y:H*.28-60,w:100,h:50,speedLimit:30},
   ];
 
-  // Lombadas
   tsSpeedBumps=[
     {x:W*.22,y:H*.55,horiz:false},
     {x:W*.5, y:H*.28,horiz:true},
@@ -857,11 +899,13 @@ function tsBuildLayout(){
     {x:W*.64,y:H*.55+7,w:52,h:9},
   ];
 
-  tsTrafficLights=tsIntersections.map((int,i)=>({
+  tsTrafficLights = tsIntersections.slice(0, tsMapState.lights).map((int,i)=>({
     x:int.x,y:int.y,
     phase:(i*40)%120,cycle:120,
     state:'green',countdown:0,
   }));
+
+  tsTrees = tsGenTrees(tsMapState.trees);
 }
 
 function tsInitRain(){
@@ -872,12 +916,30 @@ function tsInitRain(){
   }));
 }
 
+function tsWorldFromScreen(mx,my){
+  const viewX = (1 - tsZoom) * tsW * 0.5;
+  const viewY = (1 - tsZoom) * tsH * 0.5;
+  return {x:(mx - viewX)/tsZoom, y:(my - viewY)/tsZoom};
+}
+
 function tsGenBuildingWindows(){
   const bldgs=tsGetBuildings();
   return bldgs.map(b=>{
     const rows=Math.floor(b.h/11),cols=Math.floor(b.w/13);
     return{...b,rows,cols,windows:Array.from({length:rows*cols},()=>Math.random())};
   });
+}
+
+function tsGenTrees(density){
+  const trees=[];
+  const count = Math.max(10, Math.round(20 + density * 50));
+  for(let i=0;i<count;i++){
+    const x = tsR(20, tsW-20);
+    const y = tsR(20, tsH-40);
+    if(tsRoads.v.some(r=>Math.abs(x-r.x) < 50) || tsRoads.h.some(r=>Math.abs(y-r.y) < 40)) continue;
+    trees.push({x,y,size:tsR(10,18),shade:tsR(-20,20)});
+  }
+  return trees;
 }
 function tsGetBuildings(){
   const W=tsW,H=tsH;
@@ -905,7 +967,8 @@ const TS_VEHICLE_TYPES=[
 ];
 
 function tsSpawnVehicle(){
-  if(tsVehicles.length>=38)return;
+  const maxVehicles = tsMapState?.maxVehicles || 38;
+  if(tsVehicles.length >= maxVehicles) return;
   // Ambulância: rara
   const tIdx=(tsChaosMode&&Math.random()<.12)?5:tsRI(0,4);
   const t=TS_VEHICLE_TYPES[tIdx];
@@ -950,10 +1013,13 @@ function tsSpawnVehicle(){
   const cellphone =isInf&&Math.random()<.3;
   const wrongWay  =isInf&&Math.random()<.12;
 
+  const angle = Math.atan2(dy,dx);
+  const finalDx = wrongWay ? -dx : dx;
+  const finalDy = wrongWay ? -dy : dy;
   const v={
-    x,y,dx,dy,
-    // Direção invertida se na contramão
-    dx:wrongWay?-dx:dx, dy:wrongWay?-dy:dy,
+    x,y,dx:finalDx,dy:finalDy,
+    // Direção do movimento
+    angle: angle + (wrongWay ? Math.PI : 0),
     speed:baseSpd*wMul,
     type:t.type,color:isInf?'#ef4444':color,origColor:color,
     label:t.label,
@@ -1173,6 +1239,7 @@ function tsCheckPedestrianRight(v,p){
     p.alive=false;
     v.violationFlash=120;
     tsShowNotif('💥 ATROPELAMENTO! Pedestre tinha preferência na faixa!','danger');
+    if(tsVoiceEnabled) tsSpeak('Atropelamento na faixa de pedestres. Chame a ambulância!');
   }
 }
 
@@ -1201,6 +1268,29 @@ function tsDrawGround(){
   tsCtx.lineWidth=1; tsCtx.setLineDash([8,20]);
   for(let y=0;y<tsH;y+=14){tsCtx.beginPath();tsCtx.moveTo(0,y);tsCtx.lineTo(tsW,y);tsCtx.stroke();}
   tsCtx.setLineDash([]);
+}
+
+function tsDrawTrees(){
+  tsTrees.forEach(tree=>{
+    const trunkH = tree.size * 0.8;
+    tsCtx.fillStyle='#3c2b18';
+    tsCtx.fillRect(tree.x-1.5, tree.y+tree.size*0.3, 3, trunkH);
+    const clamp = v => Math.max(0, Math.min(255, v));
+    const glow = tsCtx.createRadialGradient(tree.x, tree.y, tree.size*0.2, tree.x, tree.y, tree.size);
+    glow.addColorStop(0, `rgba(${clamp(160+tree.shade)},${clamp(230+tree.shade)},${clamp(120+tree.shade)},0.85)`);
+    glow.addColorStop(1, 'rgba(23,68,27,0)');
+    tsCtx.fillStyle=glow;
+    tsCtx.beginPath();
+    tsCtx.arc(tree.x, tree.y, tree.size*1.2, 0, Math.PI*2);
+    tsCtx.fill();
+    const r = Math.max(32, Math.min(220, 90+tree.shade));
+    const g = Math.max(72, Math.min(230, 140+tree.shade));
+    const b = Math.max(24, Math.min(180, 70+tree.shade));
+    tsCtx.fillStyle=`rgb(${r},${g},${b})`;
+    tsCtx.beginPath();
+    tsCtx.arc(tree.x, tree.y, tree.size*0.95, 0, Math.PI*2);
+    tsCtx.fill();
+  });
 }
 
 function tsDrawRoads(){
@@ -1245,20 +1335,21 @@ function tsDrawRoads(){
   tsRoads.h.forEach(drawH);
   tsRoads.v.forEach(drawV);
 
-  // Rodovia
-  const hw=tsRoads.highway;const hwW=hw.laneW*hw.lanes*2;
-  tsCtx.fillStyle=isN?'#111':'#1e1e1e';tsCtx.fillRect(hw.x-hwW/2,0,hwW,H);
-  tsCtx.strokeStyle='#fff5';tsCtx.lineWidth=1.8;
-  tsCtx.beginPath();tsCtx.moveTo(hw.x-hwW/2,0);tsCtx.lineTo(hw.x-hwW/2,H);tsCtx.stroke();
-  tsCtx.beginPath();tsCtx.moveTo(hw.x+hwW/2,0);tsCtx.lineTo(hw.x+hwW/2,H);tsCtx.stroke();
-  tsCtx.strokeStyle='#fbbf2488';tsCtx.lineWidth=2;tsCtx.setLineDash([]);
-  tsCtx.beginPath();tsCtx.moveTo(hw.x,0);tsCtx.lineTo(hw.x,H);tsCtx.stroke();
-  tsCtx.setLineDash([22,13]);tsCtx.strokeStyle='#fff4';tsCtx.lineWidth=1.2;
-  [-hw.laneW/2,hw.laneW/2].forEach(off=>{tsCtx.beginPath();tsCtx.moveTo(hw.x+off,0);tsCtx.lineTo(hw.x+off,H);tsCtx.stroke();});
-  tsCtx.setLineDash([]);
-  tsDrawSpeedSign(hw.x+30,H*.12,'110');tsDrawSpeedSign(hw.x+30,H*.62,'110');
-  tsCtx.fillStyle='#ffffff25';tsCtx.font='bold 7px DM Mono,monospace';tsCtx.textAlign='center';
-  tsCtx.fillText('RODOVIA',hw.x,H*.35);
+  if(tsRoads.highway){
+    const hw=tsRoads.highway;const hwW=hw.laneW*hw.lanes*2;
+    tsCtx.fillStyle=isN?'#111':'#1e1e1e';tsCtx.fillRect(hw.x-hwW/2,0,hwW,H);
+    tsCtx.strokeStyle='#fff5';tsCtx.lineWidth=1.8;
+    tsCtx.beginPath();tsCtx.moveTo(hw.x-hwW/2,0);tsCtx.lineTo(hw.x-hwW/2,H);tsCtx.stroke();
+    tsCtx.beginPath();tsCtx.moveTo(hw.x+hwW/2,0);tsCtx.lineTo(hw.x+hwW/2,H);tsCtx.stroke();
+    tsCtx.strokeStyle='#fbbf2488';tsCtx.lineWidth=2;tsCtx.setLineDash([]);
+    tsCtx.beginPath();tsCtx.moveTo(hw.x,0);tsCtx.lineTo(hw.x,H);tsCtx.stroke();
+    tsCtx.setLineDash([22,13]);tsCtx.strokeStyle='#fff4';tsCtx.lineWidth=1.2;
+    [-hw.laneW/2,hw.laneW/2].forEach(off=>{tsCtx.beginPath();tsCtx.moveTo(hw.x+off,0);tsCtx.lineTo(hw.x+off,H);tsCtx.stroke();});
+    tsCtx.setLineDash([]);
+    tsDrawSpeedSign(hw.x+30,H*.12,'110');tsDrawSpeedSign(hw.x+30,H*.62,'110');
+    tsCtx.fillStyle='#ffffff25';tsCtx.font='bold 7px DM Mono,monospace';tsCtx.textAlign='center';
+    tsCtx.fillText('RODOVIA',hw.x,H*.35);
+  }
 
   // Speed signs on urban roads
   tsRoads.h.forEach((r,i)=>{
@@ -1410,8 +1501,8 @@ function tsDrawVehicle(v){
   const isSel=tsSelectedVehicle&&tsSelectedVehicle.id===v.id;
   const isHov=tsHoveredVehicle&&tsHoveredVehicle.id===v.id;
   tsCtx.translate(v.x,v.y);
-  const angle=v.horiz?(v.dx>0?0:Math.PI):(v.dy>0?Math.PI/2:-Math.PI/2);
-  tsCtx.rotate(angle+(v.drunk?Math.sin(Date.now()*.008)*.15:0));
+  const angle = v.angle || Math.atan2(v.dy,v.dx);
+  tsCtx.rotate(angle + (v.drunk ? Math.sin(Date.now()*.008)*.15 : 0));
 
   let cw,ch;
   switch(v.type){case 'moto':cw=7;ch=17;break;case 'bus':cw=24;ch=52;break;case 'truck':cw=22;ch=46;break;case 'ambulance':cw=20;ch=40;break;default:cw=17;ch=32;}
@@ -1837,8 +1928,9 @@ function tsOnCanvasClick(e){
   const rect=tsCanvas.getBoundingClientRect();
   const mx=(e.clientX-rect.left)*(tsW/rect.width);
   const my=(e.clientY-rect.top)*(tsH/rect.height);
-  if(tsSelectedVehicle&&tsDist({x:mx,y:my},tsSelectedVehicle)<25){tsSelectedVehicle=null;return;}
-  const hit=tsVehicles.find(v=>v.alive&&tsDist({x:mx,y:my},v)<22);
+  const world = tsWorldFromScreen(mx,my);
+  if(tsSelectedVehicle&&tsDist(world,tsSelectedVehicle)<25){tsSelectedVehicle=null;return;}
+  const hit=tsVehicles.find(v=>v.alive&&tsDist(world,v)<22);
   tsSelectedVehicle=hit||null;
   if(hit){
     const vCount=hit.violations.length;
@@ -1854,7 +1946,8 @@ function tsOnCanvasHover(e){
   const rect=tsCanvas.getBoundingClientRect();
   const mx=(e.clientX-rect.left)*(tsW/rect.width);
   const my=(e.clientY-rect.top)*(tsH/rect.height);
-  tsHoveredVehicle=tsVehicles.find(v=>v.alive&&tsDist({x:mx,y:my},v)<22)||null;
+  const world = tsWorldFromScreen(mx,my);
+  tsHoveredVehicle=tsVehicles.find(v=>v.alive&&tsDist(world,v)<22)||null;
   tsCanvas.style.cursor=tsHoveredVehicle?'pointer':'default';
 }
 
@@ -1866,22 +1959,33 @@ function tsFrame(ts){
 
   if(tsRunning){
     tsSpawnTimer+=dt*tsSpeedMult;tsPedSpawnTimer+=dt*tsSpeedMult;
-    if(tsSpawnTimer>(tsChaosMode?.55:1.25)){tsSpawnVehicle();tsSpawnTimer=0;}
-    if(tsPedSpawnTimer>(tsChaosMode?1.1:2.1)){tsSpawnPedestrian();tsPedSpawnTimer=0;}
+    const vehicleInterval = tsChaosMode ? 0.55 : (tsMapState?.spawnRate || 1.25);
+    const pedInterval = tsChaosMode ? 1.1 : 2.1;
+    if(tsSpawnTimer > vehicleInterval){tsSpawnVehicle();tsSpawnTimer=0;}
+    if(tsPedSpawnTimer > pedInterval){tsSpawnPedestrian();tsPedSpawnTimer=0;}
     tsUpdateTL(dt);tsUpdateVehicles(dt);tsUpdatePedestrians(dt);
     tsUpdateParticles(dt);tsUpdateRain(dt);tsUpdateTime(dt);
+    tsUpdateAmbientSound();
     if(tsFrameCount%6===0)tsUpdateStats();
   }
 
   // Render
   tsCtx.clearRect(0,0,tsW,tsH);
-  tsDrawGround();tsDrawBuildings();tsDrawRoads();
+  const viewX = (1 - tsZoom) * tsW * 0.5;
+  const viewY = (1 - tsZoom) * tsH * 0.5;
+  tsCtx.save();
+  tsCtx.setTransform(tsZoom, 0, 0, tsZoom, viewX, viewY);
+  tsDrawGround();
+  tsDrawTrees();
+  tsDrawBuildings();
+  tsDrawRoads();
   tsDrawSchoolZones();tsDrawSpeedBumps();
   tsDrawCrosswalks();tsDrawZones();tsDrawTrafficLights();
   tsPedestrians.forEach(tsDrawPedestrian);
   tsVehicles.forEach(tsDrawVehicle);
   tsDrawParticles();tsDrawRain();tsDrawFog();tsDrawHeat();tsDrawNight();
   if(tsSelectedVehicle&&tsSelectedVehicle.alive)tsDrawVehicleTooltip();
+  tsCtx.restore();
 
   tsRafId=requestAnimationFrame(tsFrame);
 }
@@ -1960,11 +2064,77 @@ function tsUpdateTimeButtons(){
 }
 
 // ── Controles públicos ────────────────────────────
-function tsTogglePlay(){
+function tsToggleRun(){
   tsRunning=!tsRunning;
-  const btn=document.getElementById('btn-play');
-  if(btn){btn.textContent=tsRunning?'⏸ Pausar':'▶ Continuar';btn.className=tsRunning?'sim-ctrl-btn sim-ctrl-active':'sim-ctrl-btn';}
+  const btn=document.getElementById('btn-start-ts');
+  if(btn){btn.textContent=tsRunning?'⏸ Pausar':'▶ Continuar';}
+  if(tsRunning && !tsRafId){
+    tsLastT=0;
+    requestAnimationFrame(tsFrame);
+  }
+  if(tsAudioEnabled) tsUpdateAmbientSound();
 }
+function tsReset(){
+  if(tsRafId) cancelAnimationFrame(tsRafId);
+  tsRafId = null;
+  tsVehicles=[]; tsPedestrians=[]; tsParticles=[]; tsViolationLog=[];
+  tsTotalViolations=0; tsTotalAccidents=0; tsTotalFines=0;
+  tsSelectedVehicle=null; tsHoveredVehicle=null;
+  tsSimHour=8; tsTimeOfDay='day'; tsWeather='sunny'; tsSpeedMult=1;
+  tsChaosMode=false; tsZoom=1;
+  tsBuildLayout(); tsInitRain(); tsBuildingWindows=tsGenBuildingWindows();
+  for(let i=0;i<10;i++) tsSpawnVehicle();
+  for(let i=0;i<7;i++) tsSpawnPedestrian();
+  tsRunning=true; tsLastT=0;
+  tsUpdateBadges(); tsUpdateStats(); tsUpdateControls();
+  tsLog('🔄','Simulador reiniciado com cenário limpo e realista.','ok');
+  if(tsAudioEnabled) tsStartAmbient();
+  requestAnimationFrame(tsFrame);
+}
+function tsUpdateControls(){
+  const btn=document.getElementById('btn-start-ts');
+  if(btn) btn.textContent=tsRunning?'⏸ Pausar':'▶ Continuar';
+  const sound=document.getElementById('btn-sound');
+  if(sound) sound.className='sim-ctrl-btn'+(tsAudioEnabled?' sim-ctrl-active':'');
+  const voice=document.getElementById('btn-voice');
+  if(voice) voice.className='sim-ctrl-btn'+(tsVoiceEnabled?' sim-ctrl-active':'');
+  const map=document.getElementById('ts-map-mode-sel');
+  if(map) map.value = tsMapMode;
+  const zoomLabel=document.getElementById('ts-zoom-label');
+  if(zoomLabel) zoomLabel.textContent = `${tsZoom.toFixed(2)}×`;
+}
+
+function tsSetMapMode(mode){
+  if(!TS_MAP_MODES[mode]) return;
+  tsMapMode = mode;
+  tsBuildLayout();
+  tsVehicles=[]; tsPedestrians=[]; tsParticles=[];
+  for(let i=0;i<10;i++) tsSpawnVehicle();
+  for(let i=0;i<7;i++) tsSpawnPedestrian();
+  tsLog('🗺️',`Modo de mapa alterado para ${TS_MAP_MODES[mode].label}.`,`info`);
+  tsUpdateControls();
+}
+
+function tsSetZoom(value){
+  tsZoom = Math.min(1.4, Math.max(0.7, Math.round(value * 100) / 100));
+  tsUpdateControls();
+  tsShowNotif(`Zoom ajustado para ${tsZoom.toFixed(2)}×`,'');
+}
+
+function tsToggleAudio(){
+  tsAudioEnabled = !tsAudioEnabled;
+  if(tsAudioEnabled) tsStartAmbient();
+  else tsStopAmbient();
+  tsUpdateControls();
+  tsShowNotif(tsAudioEnabled ? '🎧 Som ambiente ativado' : '🔇 Som ambiente desativado','');
+}
+
+function tsToggleVoice(){
+  tsVoiceEnabled = !tsVoiceEnabled;
+  tsUpdateControls();
+  tsShowNotif(tsVoiceEnabled ? '🗣️ Voz ativa para avisos' : '🔕 Voz desativada','');
+}
+
 function tsSetSpeed(v){tsSpeedMult=parseFloat(v);}
 
 function tsCycleWeather(){const ws=['sunny','rain','storm','fog','hot'];tsSetWeather(ws[(ws.indexOf(tsWeather)+1)%ws.length]);}
@@ -1978,7 +2148,7 @@ function tsSetWeather(w){
     hot:'🌡 Calor extremo: pneus sobreaquecem, verifique pressão. Asfalto amolece.',
     sunny:'☀️ Condições normais. Atenção ao ofuscamento solar no amanhecer e entardecer.',
   };
-  tsLog('🌤',tips[w],'info');tsUpdateBadges();
+  tsLog('🌤',tips[w],'info');tsUpdateBadges();tsUpdateAmbientSound();
 }
 
 function tsCycleTime(){const ts2=['dawn','day','dusk','night'];tsSetTime(ts2[(ts2.indexOf(tsTimeOfDay)+1)%ts2.length]);}
@@ -1991,7 +2161,7 @@ function tsSetTime(t){
     dusk:'🌆 Entardecer: ofuscamento solar — reduza velocidade. Ligue faróis.',
     night:'🌙 Noite: FARÓIS OBRIGATÓRIOS (Art. 230). Visibilidade muito reduzida. Risco 3× maior.',
   };
-  tsLog('🕐',tips[t],'info');tsUpdateBadges();
+  tsLog('🕐',tips[t],'info');tsUpdateBadges();tsUpdateAmbientSound();
 }
 
 function tsToggleChaos(){
@@ -2001,13 +2171,69 @@ function tsToggleChaos(){
   if(tsChaosMode){
     tsLog('💥','MODO CAOS ativado! Alta frequência de infrações simultâneas!','danger');
     tsShowNotif('💥 MODO CAOS: Infrações frequentes ativadas!','danger');
+    tsSpeak('Modo caos ativado. Cuidado com infrações e acidentes.');
     setTimeout(()=>tsForceEvent('drunk'),400);
     setTimeout(()=>tsForceEvent('redlight'),900);
     setTimeout(()=>tsForceEvent('wrong_way'),1400);
   }else{
     tsLog('✅','Modo Caos desativado. Trânsito normalizado.','ok');
     tsShowNotif('✅ Trânsito normalizado.','');
+    tsSpeak('Modo caos desativado. O tráfego está mais seguro.');
   }
+}
+
+function tsInitAudio(){
+  if(tsAudioCtx) return;
+  tsAudioCtx = new (window.AudioContext||window.webkitAudioContext)();
+  const noiseBuffer = tsAudioCtx.createBuffer(1, tsAudioCtx.sampleRate * 2, tsAudioCtx.sampleRate);
+  const data = noiseBuffer.getChannelData(0);
+  for(let i=0;i<data.length;i++) data[i] = Math.random() * 2 - 1;
+  tsAmbientNoise = tsAudioCtx.createBufferSource();
+  tsAmbientNoise.buffer = noiseBuffer;
+  tsAmbientNoise.loop = true;
+  const noiseFilter = tsAudioCtx.createBiquadFilter();
+  noiseFilter.type = 'lowpass';
+  noiseFilter.frequency.value = 1200;
+  tsAmbientGain = tsAudioCtx.createGain();
+  tsAmbientGain.gain.value = 0;
+  noiseFilter.connect(tsAmbientGain).connect(tsAudioCtx.destination);
+  tsAmbientNoise.connect(noiseFilter);
+  tsAmbientNoise.start();
+
+  tsAmbientHum = tsAudioCtx.createOscillator();
+  const humGain = tsAudioCtx.createGain();
+  tsAmbientHum.type = 'sine';
+  tsAmbientHum.frequency.value = 64;
+  humGain.gain.value = 0.02;
+  tsAmbientHum.connect(humGain).connect(tsAmbientGain);
+  tsAmbientHum.start();
+}
+
+function tsStartAmbient(){
+  if(!tsAudioCtx) tsInitAudio();
+  if(tsAudioCtx.state === 'suspended') tsAudioCtx.resume();
+  tsUpdateAmbientSound();
+}
+
+function tsStopAmbient(){
+  if(!tsAmbientGain) return;
+  tsAmbientGain.gain.setTargetAtTime(0, tsAudioCtx.currentTime, 0.2);
+}
+
+function tsUpdateAmbientSound(){
+  if(!tsAudioCtx||!tsAmbientGain) return;
+  const base = tsAudioEnabled ? 0.05 + Math.min(0.12, tsVehicles.length * 0.002) : 0;
+  const weatherBoost = tsWeather === 'rain' ? 0.06 : tsWeather === 'storm' ? 0.1 : 0;
+  tsAmbientGain.gain.setTargetAtTime(base + weatherBoost, tsAudioCtx.currentTime, 0.15);
+}
+
+function tsSpeak(text){
+  if(!tsVoiceEnabled || !window.speechSynthesis) return;
+  const utter = new SpeechSynthesisUtterance(text);
+  utter.lang = 'pt-BR';
+  utter.rate = 0.9;
+  utter.pitch = 1;
+  window.speechSynthesis.speak(utter);
 }
 
 function tsForceEvent(type){
@@ -2051,7 +2277,7 @@ function tsForceEvent(type){
       tsApplyViolation(pv,'ILLEGAL_PARKING');
     }
   }else if(type==='wrong_way'&&v){
-    v.wrongWay=true;v.dx=-v.dx;v.dy=-v.dy;v.violator=true;v.color='#ef4444';
+    v.wrongWay=true;v.dx=-v.dx;v.dy=-v.dy;v.angle=Math.atan2(v.dy,v.dx);v.violator=true;v.color='#ef4444';
     tsApplyViolation(v,'WRONG_WAY');
   }
   tsUpdateStats();
