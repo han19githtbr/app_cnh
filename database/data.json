@@ -1,7 +1,7 @@
 {
   "meta": {
     "title": "Formação de Condutores · CNH Brasil",
-    "version": "2.0",
+    "version": "3.0",
     "passingScore": 70,
     "simuladoMinutes": 45
   },
@@ -16,53 +16,46 @@
       "desc": "Aprenda os tipos de placas de trânsito, sinalização semafórica, marcações no asfalto e como interpretar o ambiente viário.",
       "lessons": [
         {
-          "id": "semaforo",
-          "icon": "🚦",
-          "title": "Sinalização Semafórica",
-          "type": "semaforo",
+          "id": "introducao1",
+          "icon": "📖",
+          "title": "Introdução",
+          "type": "default",
           "concepts": [
-            { "icon": "🔴", "title": "Luz Vermelha — PARE", "body": "Nenhum veículo pode avançar. Parar é obrigatório. Infração: gravíssima, 7 pontos na CNH e multa de R$293,47." },
-            { "icon": "🟡", "title": "Luz Amarela — ATENÇÃO", "body": "Indica que o semáforo vai fechar. Só avance se estiver tão próximo que parar seja perigoso. Nunca acelere ao ver o amarelo." },
-            { "icon": "🟢", "title": "Luz Verde — SIGA", "body": "Permite avançar, mas sempre com atenção: verifique se não há pedestres ou veículos ainda cruzando antes de prosseguir." },
-            { "icon": "⚡", "title": "Semáforo Intermitente", "body": "Amarelo piscando = CUIDADO redobrado. Vermelho piscando = PARE e verifique se há condições de cruzar com segurança." }
+            { "icon": "🎯", "title": "Objetivo do módulo", "body": "Este módulo apresenta o sistema de sinalização de trânsito brasileiro: placas, semáforos, marcações no pavimento, sinais sonoros e gestos de agentes." },
+            { "icon": "📋", "title": "Por que é importante?", "body": "A sinalização é a linguagem do trânsito. Quem não conhece os sinais não consegue circular com segurança, e ignorar a sinalização é sempre infração." },
+            { "icon": "🧩", "title": "Tipos de sinalização", "body": "• Vertical (placas)\n• Horizontal (marcas no pavimento)\n• Semafórica\n• Dispositivos auxiliares\n• Gestos de agentes de trânsito" }
           ],
           "highlights": [
-            { "type": "highlight", "text": "<strong>Questão frequente no exame:</strong> \"O que deve fazer o motorista ao se deparar com o sinal amarelo?\" → Deve parar, exceto quando a paragem puder causar acidente. A luz amarela NÃO significa \"acelere antes de fechar\"!" },
-            { "type": "warn", "text": "<strong>⚠️ Semáforo intermitente (piscando):</strong> Amarelo intermitente = CUIDADO redobrado. Vermelho intermitente = PARE e verifique se há condições de cruzar." }
+            { "type": "info", "text": "<strong>A sinalização tem hierarquia:</strong> Agente de trânsito > Semáforo > Placas > Marcações no pavimento. Quando houver conflito, obedeça nessa ordem." }
           ],
           "quiz": [
             {
-              "q": "Ao se aproximar de um cruzamento com sinal amarelo, o condutor deve:",
-              "opts": ["Acelerar para atravessar antes que feche", "Parar, salvo se estiver tão próximo que a parada possa causar acidente", "Sempre parar, sem exceção", "Buzinar e atravessar devagar"],
-              "correct": 1,
-              "exp": "O CTB (Art. 44) determina que o sinal amarelo significa atenção e que o condutor deve parar, exceto quando a paragem puder causar acidente. Nunca se deve acelerar no amarelo."
-            },
-            {
-              "q": "O condutor que avançar o sinal vermelho está sujeito a:",
-              "opts": ["Advertência verbal", "Multa leve e 3 pontos", "Multa gravíssima, 7 pontos e possível suspensão", "Multa grave e 5 pontos"],
+              "q": "Qual é a hierarquia correta da sinalização de trânsito, do mais prioritário ao menos prioritário?",
+              "opts": ["Semáforo > Placas > Agente > Marcações", "Placas > Semáforo > Agente > Marcações", "Agente > Semáforo > Placas > Marcações", "Marcações > Placas > Semáforo > Agente"],
               "correct": 2,
-              "exp": "Avançar o sinal vermelho é infração GRAVÍSSIMA: multa de R$293,47 e 7 pontos na CNH. Em caso de reincidência ou acidentes, pode resultar em suspensão."
+              "exp": "A hierarquia é: Agente de trânsito (autoridade máxima) > Semáforos > Placas > Marcações viárias. Quando um agente faz um gesto, prevalece sobre qualquer outro sinal."
             }
           ]
         },
         {
-          "id": "placas-reg",
+          "id": "sinalizacao-vertical",
           "icon": "🛑",
-          "title": "Placas de Regulamentação",
+          "title": "Sinalização Vertical (Placas)",
           "type": "signs",
           "concepts": [
-            { "icon": "🔴", "title": "Placa PARE (octogonal)", "body": "Exige parada COMPLETA do veículo antes de entrar na via. Reduzir a velocidade sem parar já é infração. Única placa com formato octogonal." },
-            { "icon": "▽", "title": "Dê a Preferência", "body": "Você deve ceder passagem aos veículos que circulam na via preferencial. Aguarde espaço seguro antes de entrar." },
-            { "icon": "🔵", "title": "Placas de obrigação (azul)", "body": "Indicam sentido obrigatório, rotatória, faixa exclusiva etc. O condutor DEVE obedecer ao movimento indicado." }
+            { "icon": "🔴", "title": "Regulamentação (R) — circulares vermelhas", "body": "Impõem obrigações, proibições ou restrições. Sempre devem ser obedecidas. Ex: velocidade máxima, proibido ultrapassar, PARE." },
+            { "icon": "⚠️", "title": "Advertência (A) — triangulares amarelas", "body": "Alertam sobre situações perigosas à frente. Não proíbem — apenas sinalizam cuidado. Ex: curva perigosa, área escolar, lombada." },
+            { "icon": "🔵", "title": "Indicação (I) — retangulares azuis/verdes", "body": "Informam sobre localidades, distâncias, serviços, destinos e obrigações de rota. Fundo azul = informação. Fundo verde = rodovias." },
+            { "icon": "📐", "title": "Formas das placas — dica de prova", "body": "Octagonal → PARE\nTriângulo invertido → Dê a Preferência\nCircular vermelha → Proibição\nCircular azul → Obrigação\nTriangular amarela → Advertência\nRetangular → Indicação" }
           ],
           "highlights": [
-            { "type": "info", "text": "Regra das formas: Circular = proibição. Octagonal = PARE. Triângulo invertido = Dê a preferência. Retangular azul = indicação/obrigação." },
-            { "type": "warn", "text": "<strong>⚠️ Atenção:</strong> A placa PARE exige que o veículo <strong>pare completamente</strong>, mesmo que a via esteja aparentemente livre. Reduzir a velocidade sem parar é infração!" }
+            { "type": "info", "text": "<strong>Regra das cores:</strong> Borda/fundo VERMELHO = proibição ou obrigação. AMARELO = atenção/advertência. AZUL = informação/obrigação positiva. VERDE = rodovias. MARROM = turismo." },
+            { "type": "warn", "text": "<strong>⚠️ Placa PARE:</strong> exige parada TOTAL, mesmo que a via pareça livre. Reduzir a velocidade sem parar já é infração gravíssima!" }
           ],
           "quiz": [
             {
               "q": "Uma placa circular com borda vermelha e número 80 no centro indica:",
-              "opts": ["Velocidade mínima de 80 km/h", "Velocidade máxima de 80 km/h", "Peso máximo de 80 toneladas", "Distância de 80 metros"],
+              "opts": ["Velocidade mínima de 80 km/h", "Velocidade máxima de 80 km/h", "Peso máximo de 80 toneladas", "Distância de 80 metros até área de risco"],
               "correct": 1,
               "exp": "Placas circulares com borda vermelha são de REGULAMENTAÇÃO e indicam proibições ou restrições. Número no centro = velocidade máxima permitida naquela via."
             },
@@ -71,56 +64,160 @@
               "opts": ["Circular vermelha", "Octagonal vermelha", "Triangular com vértice para cima", "Triangular com vértice para baixo"],
               "correct": 3,
               "exp": "A placa 'Dê a Preferência' tem formato triangular com o vértice apontado para baixo (triângulo invertido), com fundo branco e bordas vermelhas."
+            },
+            {
+              "q": "Placas de advertência têm qual formato e cor característicos?",
+              "opts": ["Circulares e vermelhas", "Triangulares com vértice para cima e amarelas", "Retangulares e azuis", "Octagonais e vermelhas"],
+              "correct": 1,
+              "exp": "Placas de advertência são triangulares com vértice para cima, fundo amarelo e símbolo preto. Elas alertam — não proíbem."
             }
           ]
         },
         {
-          "id": "placas-adv",
-          "icon": "⚠️",
-          "title": "Placas de Advertência",
-          "type": "signs",
+          "id": "marcacoes-pavimento",
+          "icon": "━━",
+          "title": "Marcações do Pavimento",
+          "type": "default",
           "concepts": [
-            { "icon": "⚠️", "title": "Formato e cor", "body": "Sempre triangulares com vértice para cima, fundo amarelo e símbolo preto. Alertam — não proíbem." },
-            { "icon": "📏", "title": "Distância de instalação", "body": "30 a 150m em vias urbanas e 150 a 300m em rodovias antes do ponto de perigo." }
+            { "icon": "━", "title": "Linha contínua AMARELA", "body": "Separa sentidos opostos de tráfego. PROIBIDO ULTRAPASSAR em qualquer situação. Linha dupla = ainda mais perigoso. Infração grave: 5 pontos." },
+            { "icon": "- -", "title": "Linha tracejada AMARELA", "body": "Permite ultrapassagem quando há boa visibilidade, segurança adequada e espaço suficiente. Use com cautela e sempre sinalize." },
+            { "icon": "━", "title": "Linha BRANCA contínua", "body": "Marca faixas de circulação do mesmo sentido. Evite cruzar desnecessariamente. Pode cruzar para sair da via (retorno, acesso lateral)." },
+            { "icon": "- -", "title": "Linha tracejada BRANCA", "body": "Faixa de circulação do mesmo sentido. Permite mudança de faixa dentro do mesmo sentido de tráfego." },
+            { "icon": "⬜⬜", "title": "Faixa de Pedestres (Zebra)", "body": "OBRIGATÓRIO reduzir a velocidade e parar se houver pedestre. Pedestres têm prioridade absoluta. Parar sobre a faixa é infração grave." },
+            { "icon": "🚴", "title": "Faixa de Bicicleta", "body": "Espaço reservado para ciclistas. Carros devem respeitar. Estacionar sobre ciclovias é infração grave." },
+            { "icon": "🟠", "title": "Marcas de borda (VERMELHA)", "body": "Em cruzamentos especiais ou áreas com restrições. Indica áreas vedadas ao estacionamento ou circulação." }
           ],
           "highlights": [
-            { "type": "info", "text": "Placas de advertência alertam — não proíbem. Ao ver uma, o condutor deve redobrar a atenção e possivelmente reduzir a velocidade, mas não há proibição expressa." }
+            { "type": "info", "text": "<strong>Regra de ouro:</strong> Linha contínua (amarela ou branca) = PROIBIDO cruzar. Linha tracejada = permitido cruzar com segurança." },
+            { "type": "warn", "text": "<strong>NUNCA ultrapasse na faixa de pedestres!</strong> É infração grave mesmo que não haja pedestres visíveis." }
           ],
           "quiz": [
             {
-              "q": "Uma placa triangular amarela com símbolo de criança indica:",
-              "opts": ["Proibido o trânsito de crianças", "Área escolar — atenção redobrada", "Velocidade máxima reduzida para crianças", "Parada obrigatória de ônibus escolar"],
+              "q": "O que significa uma linha contínua amarela no centro da pista?",
+              "opts": ["Separação de mesma direção", "Separação de sentidos opostos com proibição de ultrapassagem", "Sobre-elevação da pista", "Início de limite de velocidade"],
               "correct": 1,
-              "exp": "Placas triangulares amarelas são de ADVERTÊNCIA. A placa de área escolar avisa que há crianças circulando naquela região e que o motorista deve redobrar a atenção."
+              "exp": "Linha contínua amarela separa sentidos opostos e PROÍBE ultrapassagem. Cruzá-la é infração GRAVE mesmo que não haja carro vindo."
+            },
+            {
+              "q": "Qual é a diferença entre linha branca contínua e tracejada?",
+              "opts": ["Nenhuma — ambas proíbem cruzar", "Contínua = proíbe cruzar; tracejada = permite trocar de faixa", "Contínua = pista velha; tracejada = pista nova", "Ambas permitem cruzar livremente"],
+              "correct": 1,
+              "exp": "Linha branca contínua marca faixas do mesmo sentido — evite cruzar. Tracejada = permite mudança de faixa segura entre faixas do mesmo sentido."
             }
           ]
         },
         {
-          "id": "marcacoes",
-          "icon": "🛣️",
-          "title": "Marcações no Pavimento",
-          "type": "default",
+          "id": "demais-sinalizacoes",
+          "icon": "🚦",
+          "title": "Semáforos e Sinais dos Agentes",
+          "type": "semaforo",
           "concepts": [
-            { "icon": "━━", "title": "Linha contínua amarela", "body": "Separa sentidos opostos de tráfego. Proibido ultrapassar — cruzar essa linha é infração grave." },
-            { "icon": "- -", "title": "Linha tracejada amarela", "body": "Permite ultrapassagem quando há visibilidade e segurança suficientes para a manobra." },
-            { "icon": "⬜⬜", "title": "Faixa de pedestres (zebra)", "body": "O pedestre tem prioridade. O veículo DEVE parar antes da faixa quando há pedestre aguardando ou cruzando." },
-            { "icon": "━", "title": "Linha de parada", "body": "Linha branca sólida transversal — o veículo deve parar antes dela em semáforos e placas de PARE." }
+            { "icon": "🔴", "title": "Semáforo — Luz Vermelha: PARE", "body": "Nenhum veículo pode avançar. Parar é obrigatório. Infração: gravíssima, 7 pontos na CNH e multa de R$293,47." },
+            { "icon": "🟡", "title": "Semáforo — Luz Amarela: ATENÇÃO", "body": "Indica que o semáforo vai fechar. Só avance se estiver tão próximo que parar seja perigoso. Nunca acelere ao ver o amarelo." },
+            { "icon": "🟢", "title": "Semáforo — Luz Verde: SIGA", "body": "Permite avançar, mas sempre com atenção: verifique pedestres ou veículos ainda cruzando antes de prosseguir." },
+            { "icon": "⚡", "title": "Semáforo Intermitente", "body": "Amarelo piscando = CUIDADO redobrado. Vermelho piscando = PARE e verifique se há condições de cruzar com segurança." },
+            { "icon": "━━", "title": "Linha contínua amarela", "body": "Separa sentidos opostos de tráfego. Proibido ultrapassar. Cruzar essa linha é infração grave." },
+            { "icon": "- -", "title": "Linha tracejada amarela", "body": "Permite ultrapassagem quando há visibilidade e segurança suficientes." },
+            { "icon": "⬜⬜", "title": "Faixa de pedestres (zebra)", "body": "O pedestre tem prioridade absoluta. O veículo DEVE parar quando há pedestre aguardando ou cruzando." },
+            { "icon": "🤚", "title": "Gestos de agentes de trânsito", "body": "Braço levantado = atenção/pare. Braço estendido = siga. Ambos os braços abertos = pare dos dois lados. Girar o braço = acelere." }
           ],
           "highlights": [
-            { "type": "info", "text": "<strong>Cores das marcas:</strong><br>• <strong>Amarelas</strong> → separam sentidos opostos<br>• <strong>Brancas</strong> → mesmo sentido de tráfego, paradas, faixas<br>• <strong>Vermelhas</strong> → ciclovias e cruzamentos especiais" }
+            { "type": "highlight", "text": "<strong>Questão frequente no exame:</strong> \"O que deve fazer o motorista ao se deparar com o sinal amarelo?\" → Deve parar, exceto quando a paragem puder causar acidente." },
+            { "type": "info", "text": "<strong>Cores das marcas viárias:</strong><br>• Amarelas → separam sentidos opostos<br>• Brancas → mesmo sentido, faixas, paradas<br>• Vermelhas → ciclovias e cruzamentos especiais" }
           ],
           "quiz": [
+            {
+              "q": "Ao se aproximar de um cruzamento com sinal amarelo, o condutor deve:",
+              "opts": ["Acelerar para atravessar antes que feche", "Parar, salvo se estiver tão próximo que parar cause acidente", "Sempre parar, sem exceção", "Buzinar e atravessar devagar"],
+              "correct": 1,
+              "exp": "O CTB (Art. 44) determina que o sinal amarelo significa atenção e que o condutor deve parar, exceto quando a paragem puder causar acidente. Nunca se deve acelerar no amarelo."
+            },
             {
               "q": "Uma linha amarela contínua no centro da pista indica:",
               "opts": ["Separação de faixas do mesmo sentido", "Proibição de ultrapassagem", "Área de manobras permitidas", "Início de pista dupla"],
               "correct": 1,
-              "exp": "Linha contínua amarela no eixo separa sentidos opostos e indica PROIBIÇÃO de ultrapassagem. Já a linha tracejada amarela permite ultrapassagem com segurança."
+              "exp": "Linha contínua amarela no eixo separa sentidos opostos e indica PROIBIÇÃO de ultrapassagem. A linha tracejada amarela permite ultrapassagem com segurança."
             },
             {
-              "q": "Na faixa de pedestres, o pedestre que está na calçada:",
-              "opts": ["Não tem prioridade — deve esperar o semáforo", "Tem prioridade sobre veículos", "Deve dar preferência aos veículos", "Só tem prioridade quando há semáforo"],
+              "q": "Um agente de trânsito e o semáforo dão ordens opostas. O condutor deve obedecer:",
+              "opts": ["Ao semáforo, pois é equipamento oficial", "Ao agente de trânsito, pois tem autoridade máxima", "Ao bom senso — escolha a mais segura", "Ao código — ignorar ambos e seguir devagar"],
               "correct": 1,
-              "exp": "De acordo com o CTB, na faixa de pedestres o pedestre tem prioridade de passagem, mesmo sem semáforo. O condutor DEVE parar e dar preferência."
+              "exp": "A hierarquia da sinalização coloca o agente de trânsito no topo: sua ordem prevalece sobre o semáforo, as placas e as marcações no pavimento."
+            }
+          ]
+        },
+        {
+          "id": "teste1",
+          "icon": "🏆",
+          "title": "Teste seus conhecimentos!",
+          "type": "quiz-only",
+          "concepts": [],
+          "highlights": [
+            { "type": "info", "text": "Responda às questões abaixo para testar o que aprendeu no Módulo 1. Você precisa de 70% de acerto (equivalente à prova real do DETRAN)." }
+          ],
+          "quiz": [
+            {
+              "q": "Na faixa de pedestres, o pedestre que está na calçada aguardando para atravessar:",
+              "opts": ["Não tem prioridade — deve esperar o semáforo", "Tem prioridade sobre os veículos", "Deve dar preferência aos veículos", "Só tem prioridade quando há semáforo"],
+              "correct": 1,
+              "exp": "De acordo com o CTB, na faixa de pedestres o pedestre tem prioridade de passagem mesmo sem semáforo. O condutor DEVE parar e dar preferência."
+            },
+            {
+              "q": "Semáforo intermitente amarelo piscando significa:",
+              "opts": ["Parar obrigatoriamente", "Seguir normalmente sem reduzir velocidade", "Atenção e cuidado redobrado", "Proibido circular naquela via"],
+              "correct": 2,
+              "exp": "Semáforo amarelo intermitente (piscando) indica ATENÇÃO e cuidado redobrado — o condutor deve reduzir a velocidade e verificar as condições antes de cruzar."
+            },
+            {
+              "q": "O condutor que avançar o sinal vermelho está sujeito a:",
+              "opts": ["Advertência verbal", "Multa leve e 3 pontos", "Multa gravíssima e 7 pontos", "Multa grave e 5 pontos"],
+              "correct": 2,
+              "exp": "Avançar o sinal vermelho é infração GRAVÍSSIMA: multa de R$293,47 e 7 pontos na CNH. Em reincidência pode resultar em suspensão da CNH."
+            },
+            {
+              "q": "Qual a cor das placas de regulamentação que indicam proibição?",
+              "opts": ["Azul com símbolo branco", "Verde com letras brancas", "Circular com borda vermelha", "Amarela com símbolo preto"],
+              "correct": 2,
+              "exp": "Placas de regulamentação de proibição têm borda vermelha, fundo branco e símbolo vermelho/preto. A forma é circular."
+            }
+          ]
+        },
+        {
+          "id": "tipos-vias-rotatoria",
+          "icon": "🛣️",
+          "title": "Tipos de Via e Rotatória",
+          "type": "default",
+          "concepts": [
+            { "icon": "🚗💨", "title": "Rodovia — Pista Dupla", "body": "Vias de alta velocidade com duas faixas separadas por barreira física ou calçadão central. Velocidade máxima: 110 km/h. Ultrapassagem permitida na faixa esquerda após verificação." },
+            { "icon": "🚗", "title": "Rodovia — Pista Simples", "body": "Uma faixa para cada sentido. Velocidade máxima: 100 km/h. Ultrapassagem é uma das manobras mais perigosas — só faça com visibilidade total e espaço suficiente." },
+            { "icon": "🏙️", "title": "Via Arterial (principal)", "body": "Conecta diferentes bairros em zona urbana. Velocidade máxima: 60 km/h. Geralmente tem iluminação pública e semáforos frequentes." },
+            { "icon": "🏘️", "title": "Via Coletora", "body": "Distribui tráfego dentro de bairros. Velocidade: 40 km/h. Conecta vias locais às arteriais." },
+            { "icon": "🏘️", "title": "Via Local (rua residencial)", "body": "Ruas comuns de bairros. Velocidade máxima: 30 km/h. Prioridade para pedestres, crianças e idosos. Vigilância redobrada." },
+            { "icon": "🔄", "title": "Rotatória — Como funcionar corretamente", "body": "1. QUEM ESTÁ NA ROTATÓRIA tem preferência\n2. Ao ENTRAR, ceda passagem\n3. Ao SAIR, sinalize com pisca-pisca\n4. Mantenha-se na faixa externa (próxima à saída desejada)\n5. Circular múltiplas vezes é PROIBIDO — é infração" },
+            { "icon": "⚠️", "title": "Erros comuns em rotatórias", "body": "❌ Achar que tem preferência ao entrar\n❌ Não usar pisca-pisca ao sair\n❌ Mudar de faixa abruptamente\n❌ Passar por cima da rotatória (calçadão central)\n❌ Pedir preferência buzinando" }
+          ],
+          "highlights": [
+            { "type": "warn", "text": "<strong>Regra de ouro em rotatória:</strong> Quem ENTRA cede; quem ESTÁ circulando passa. Se não souber qual saída tomar, dê a volta completa novamente." },
+            { "type": "info", "text": "<strong>Dica prática:</strong> Antes de entrar em rotatória, observe por segundos esperando espaço seguro. Não tenha pressa!" }
+          ],
+          "quiz": [
+            {
+              "q": "Em uma rotatória, qual veículo tem preferência de passagem?",
+              "opts": ["Quem entra pela direita", "Quem está circulando dentro da rotatória", "Quem entra pela esquerda", "O veículo maior"],
+              "correct": 1,
+              "exp": "Quem já está circulando DENTRO da rotatória tem preferência. Quem vai ENTRAR deve ceder passagem aguardando espaço seguro."
+            },
+            {
+              "q": "Qual é a velocidade máxima em via local urbana?",
+              "opts": ["40 km/h", "50 km/h", "30 km/h", "60 km/h"],
+              "correct": 2,
+              "exp": "Em vias locais (ruas residenciais), a velocidade máxima é 30 km/h conforme o CTB. Circulação tranquila e com muita atenção a pedestres."
+            },
+            {
+              "q": "Você entra em rotatória mas não tem certeza de qual saída tomar. O que fazer?",
+              "opts": ["Virar abruptamente para qualquer saída", "Dar a volta completa e sair na saída correta", "Frear no meio da rotatória e medir", "Buzinar pedindo informações"],
+              "correct": 1,
+              "exp": "Se entrou em rotatória e não tem certeza da saída, o correto é completar a volta (circular completamente) e sair na próxima oportunidade. Nunca saia abruptamente!"
             }
           ]
         }
@@ -135,17 +232,17 @@
       "desc": "Infrações, penalidades, pontos na CNH, suspensão, cassação e a responsabilidade legal do condutor.",
       "lessons": [
         {
-          "id": "ctb",
+          "id": "introducao2",
           "icon": "📖",
-          "title": "Código de Trânsito Brasileiro",
+          "title": "Introdução",
           "type": "default",
           "concepts": [
-            { "icon": "👤", "title": "Condutor", "body": "Responsável pela segurança do veículo e de todos os ocupantes. CNH obrigatória para qualquer condução de veículo automotor." },
-            { "icon": "🚶", "title": "Pedestre", "body": "Tem prioridade na faixa de travessia. Pode ser autuado por trafegar fora dos locais permitidos ou cruzar com semáforo fechado." },
-            { "icon": "🏛️", "title": "Autoridade de trânsito", "body": "Agentes do DETRAN, PM de trânsito, DER e Município têm competência para fiscalizar e autuar infrações." }
+            { "icon": "⚖️", "title": "Código de Trânsito Brasileiro (CTB)", "body": "Lei nº 9.503/1997 — regulamenta o trânsito de qualquer natureza nas vias terrestres, portos, aeroportos e fronteiras do Brasil." },
+            { "icon": "👤", "title": "Responsabilidade do condutor", "body": "O condutor é responsável pela segurança do veículo e de todos os ocupantes. Portar a CNH válida é obrigatório para qualquer condução de veículo automotor." },
+            { "icon": "🏛️", "title": "Autoridades de trânsito", "body": "DETRAN, PM de trânsito, DER, SENATRAN e municípios têm competência para fiscalizar e autuar infrações de trânsito." }
           ],
           "highlights": [
-            { "type": "info", "text": "<strong>Principais obrigações do condutor (CTB):</strong><br>• Portar CNH válida e documento do veículo<br>• Usar cinto de segurança e exigir de todos os passageiros<br>• Não usar celular ao volante<br>• Respeitar a sinalização de trânsito<br>• Não conduzir sob efeito de álcool ou drogas" }
+            { "type": "info", "text": "<strong>Principais obrigações do condutor (CTB):</strong><br>• Portar CNH válida e documento do veículo<br>• Usar cinto de segurança e exigir de todos<br>• Não usar celular ao volante<br>• Respeitar a sinalização<br>• Não conduzir sob efeito de álcool ou drogas" }
           ],
           "quiz": [
             {
@@ -157,23 +254,24 @@
           ]
         },
         {
-          "id": "pontos",
+          "id": "infracoes-penalidades",
           "icon": "🎯",
-          "title": "Sistema de Pontos",
+          "title": "Infrações e Penalidades",
           "type": "table",
-          "tableHeaders": ["Tipo de Infração", "Pontos", "Suspensão"],
+          "tableHeaders": ["Natureza", "Pontos", "Multa (R$)", "Exemplo"],
           "tableRows": [
-            ["Leve", "3", "—"],
-            ["Média", "4", "—"],
-            ["Grave", "5", "Possível"],
-            ["Gravíssima", "7", "Em reincidência"],
-            ["Condutor geral (limite)", "20", "6 meses a 1 ano"],
-            ["Motorista profissional (limite)", "30", "6 meses a 1 ano"],
-            ["Qualquer condutor (limite absoluto)", "40", "Imediata"]
+            ["Leve", "3", "88,38", "Não sinalizar manobra"],
+            ["Média", "4", "130,16", "Estacionar em local proibido"],
+            ["Grave", "5", "195,23", "Usar celular ao volante"],
+            ["Gravíssima", "7", "293,47", "Avançar sinal vermelho"],
+            ["Gravíssima ×3", "7", "880,41", "Excesso de vel. >50%"],
+            ["Gravíssima ×5", "7", "1.467,35", "Disputar racha"],
+            ["Gravíssima ×10", "7", "2.934,70", "Dirigir alcoolizado"]
           ],
           "concepts": [],
           "highlights": [
-            { "type": "warn", "text": "<strong>Limites:</strong> Condutor comum → 20 pts em 12 meses = suspensão. Motorista profissional → 30 pts. Qualquer condutor → 40 pts = suspensão imediata independente da categoria." }
+            { "type": "warn", "text": "<strong>Limites de pontos:</strong> Condutor comum → 20 pts em 12 meses = suspensão. Motorista profissional → 30 pts. Qualquer condutor → 40 pts = suspensão imediata." },
+            { "type": "info", "text": "<strong>Penalidades além da multa:</strong> advertência por escrito, suspensão da CNH, cassação da CNH, frequência obrigatória em curso de reciclagem e retenção do veículo." }
           ],
           "quiz": [
             {
@@ -181,55 +279,119 @@
               "opts": ["Nada, pois o limite é 30", "CNH suspensa por 6 meses a 1 ano", "CNH cassada definitivamente", "Multa extra de R$500"],
               "correct": 1,
               "exp": "O limite para condutores comuns é 20 pontos em 12 meses. Com 22 pontos, a CNH é suspensa por 6 meses a 1 ano. O limite de 30 pontos é apenas para motoristas profissionais."
+            },
+            {
+              "q": "Disputar corrida (racha) na via pública é classificado como:",
+              "opts": ["Infração grave — 5 pontos", "Infração gravíssima — 7 pontos", "Gravíssima ×5 e crime de trânsito", "Infração média — 4 pontos"],
+              "correct": 2,
+              "exp": "Disputar racha é infração gravíssima com fator multiplicador ×5 (multa de R$1.467,35) e constitui crime de trânsito, podendo resultar em detenção."
             }
           ]
         },
         {
-          "id": "leiseca",
-          "icon": "🍺",
-          "title": "Lei Seca",
+          "id": "infracoes-comuns",
+          "icon": "🚫",
+          "title": "Infrações mais Comuns",
           "type": "default",
           "concepts": [
-            { "icon": "0", "title": "Tolerância zero (administrativo)", "body": "Qualquer detecção de álcool: multa de R$2.934,70 (gravíssima ×10) + suspensão da CNH por 12 meses + retenção do veículo." },
-            { "icon": "⚖️", "title": "Crime de trânsito (≥0,34 mg/L no ar)", "body": "A partir de 0,34 mg/L no ar expirado (ou 0,6 g/L no sangue): crime com pena de 6 meses a 3 anos de detenção." },
-            { "icon": "🚫", "title": "Recusa ao bafômetro", "body": "A recusa implica nas mesmas penalidades administrativas. Desde 2012, recusar equivale a reprovar no teste." }
+            { "icon": "📱", "title": "Celular ao volante — GRAVE", "body": "Usar celular (inclusive viva-voz) ao dirigir é infração grave: 5 pontos e multa de R$293,47. Segurar o aparelho na mão já configura infração." },
+            { "icon": "🔴", "title": "Avançar sinal vermelho — GRAVÍSSIMA", "body": "7 pontos e multa de R$293,47. Um dos maiores causadores de acidentes fatais nos cruzamentos urbanos." },
+            { "icon": "🚗💨", "title": "Excesso de velocidade", "body": "Até 20% acima: infração grave (5 pts). De 20% a 50%: gravíssima (7 pts, R$293,47). Acima de 50%: gravíssima ×3 (R$880,41 + retenção)." },
+            { "icon": "🎗️", "title": "Cinto de segurança — GRAVE", "body": "Obrigatório para TODOS os ocupantes. O condutor responde pela infração dos passageiros que não usarem. 5 pontos por passageiro sem cinto." },
+            { "icon": "🍺", "title": "Álcool ao volante — GRAVÍSSIMA ×10", "body": "Qualquer detecção: R$2.934,70 + suspensão 12 meses + retenção. Reincidência em 12 meses: suspensão de 3 anos. A partir de 0,34 mg/L no ar: CRIME." },
+            { "icon": "👶", "title": "Criança sem cadeirinha — GRAVÍSSIMA", "body": "Conduzir criança menor de 10 anos no banco da frente ou sem dispositivo de retenção adequado: 7 pontos + R$293,47 + retenção." }
           ],
           "highlights": [
-            { "type": "warn", "text": "<strong>Reincidência em 12 meses:</strong> suspensão de 3 anos. Os efeitos do álcool incluem visão periférica reduzida, tempo de reação triplicado e falsa sensação de segurança." }
+            { "type": "warn", "text": "<strong>Proibições específicas no CTB:</strong><br>• Parar sobre a faixa de pedestres (grave)<br>• Ultrapassar linha contínua (grave)<br>• Transitar sem CNH (gravíssima + retenção)<br>• Dirigir com farol apagado à noite (grave)" }
           ],
           "quiz": [
             {
-              "q": "Um motorista se recusa a fazer o teste do bafômetro. Ele:",
-              "opts": ["Não pode ser multado, pois é um direito recusar", "Recebe as mesmas penalidades como se tivesse reprovado", "É apenas advertido verbalmente", "Pode ir embora sem consequências"],
-              "correct": 1,
-              "exp": "A recusa ao teste do bafômetro implica as mesmas penalidades administrativas (multa de R$2.934,70 + suspensão de 12 meses), pois configura flagrante de infração pela própria recusa."
+              "q": "Usar o celular enquanto dirige é:",
+              "opts": ["Infração leve — apenas advertência", "Infração média — 4 pontos", "Infração grave — 5 pontos e multa", "Infração gravíssima — 7 pontos"],
+              "correct": 2,
+              "exp": "Usar celular ao volante é infração GRAVE: 5 pontos na CNH e multa de R$293,47. Isso vale mesmo para aparelho no modo viva-voz se o motorista estiver segurando o dispositivo."
+            },
+            {
+              "q": "Um motorista trafega a 80 km/h em uma via com limite de 50 km/h. Isso é excesso de:",
+              "opts": ["20% — infração grave", "40% — infração gravíssima", "60% — gravíssima ×3", "Não é infração pois a diferença é pequena"],
+              "correct": 2,
+              "exp": "80 km/h em zona de 50 km/h representa 60% acima do limite, configurando infração GRAVÍSSIMA ×3 (acima de 50%): multa de R$880,41 e retenção do veículo."
             }
           ]
         },
         {
-          "id": "velocidade",
-          "icon": "⚡",
-          "title": "Velocidades Máximas",
-          "type": "table",
-          "tableHeaders": ["Tipo de Via", "Vel. Máx."],
-          "tableRows": [
-            ["Rodovias (pista dupla)", "110 km/h"],
-            ["Rodovias (pista simples)", "100 km/h"],
-            ["Vias de trânsito rápido (urbanas)", "80 km/h"],
-            ["Vias arteriais", "60 km/h"],
-            ["Vias coletoras", "40 km/h"],
-            ["Vias locais", "30 km/h"]
-          ],
+          "id": "teste2",
+          "icon": "🏆",
+          "title": "Teste seus conhecimentos!",
+          "type": "quiz-only",
           "concepts": [],
           "highlights": [
-            { "type": "info", "text": "<strong>Excesso de velocidade:</strong><br>• Até 20% acima → Infração grave (5 pontos)<br>• De 20% a 50% acima → Infração gravíssima (7 pontos)<br>• Acima de 50% → Gravíssima ×3 (21 pontos!)" }
+            { "type": "info", "text": "Hora de testar o que aprendeu sobre infrações e consequências! Responda às questões no estilo do exame do DETRAN." }
           ],
           "quiz": [
             {
-              "q": "Em uma rodovia de pista simples, qual é a velocidade máxima permitida para automóveis?",
-              "opts": ["80 km/h", "90 km/h", "100 km/h", "110 km/h"],
+              "q": "Motorista profissional tem a CNH suspensa ao acumular quantos pontos em 12 meses?",
+              "opts": ["20 pontos", "25 pontos", "30 pontos", "40 pontos"],
               "correct": 2,
-              "exp": "Em rodovias de pista simples, a velocidade máxima para automóveis é 100 km/h. Em pista dupla, sobe para 110 km/h. Em ambos os casos, a sinalização local pode reduzir esses limites."
+              "exp": "Motoristas profissionais (transportadores de passageiros ou cargas) têm limite de 30 pontos em 12 meses. Condutores comuns têm limite de 20 pontos."
+            },
+            {
+              "q": "A recusa ao teste do bafômetro implica:",
+              "opts": ["Nenhuma penalidade — é direito do cidadão", "Apenas advertência verbal", "As mesmas penalidades administrativas do teste positivo", "Apenas a retenção do veículo"],
+              "correct": 2,
+              "exp": "A recusa ao bafômetro implica as mesmas penalidades administrativas: multa de R$2.934,70 + suspensão de 12 meses + retenção do veículo."
+            },
+            {
+              "q": "Conduzir veículo sem CNH é qual tipo de infração?",
+              "opts": ["Leve — advertência", "Média — 4 pontos", "Grave — 5 pontos", "Gravíssima — 7 pontos + retenção"],
+              "correct": 3,
+              "exp": "Transitar sem CNH é infração GRAVÍSSIMA: 7 pontos e retenção do veículo. Conduzir com CNH vencida é infração grave."
+            },
+            {
+              "q": "O cinto de segurança é obrigatório para:",
+              "opts": ["Apenas o motorista", "Motorista e passageiros do banco da frente", "Todos os ocupantes em qualquer posição", "Apenas em rodovias"],
+              "correct": 2,
+              "exp": "O cinto é obrigatório para TODOS os ocupantes do veículo, em TODAS as posições. O condutor responde pela infração de cada passageiro que não usar."
+            }
+          ]
+        },
+        {
+          "id": "pontos-transito",
+          "icon": "📍",
+          "title": "Locais Especiais e Como Circular",
+          "type": "default",
+          "concepts": [
+            { "icon": "🏥", "title": "Próximo a Hospitais", "body": "PROIBIDO usar buzina desnecessariamente (infração). Reduza a velocidade. Tenha grande cuidado com ambulâncias e pessoal de saúde." },
+            { "icon": "🎓", "title": "Próximo a Escolas", "body": "Velocidade máxima: 20-30 km/h dependendo da sinalização. Reforce a atenção em entrada/saída de alunos. Criança correndo/próxima à pista = risco máximo." },
+            { "icon": "⛪", "title": "Próximo a Igrejas", "body": "Reduza a velocidade em horários de funcionar (serviços, casamentos, enterros). Buzina é proibida nestes locais." },
+            { "icon": "🚌", "title": "Próximo a Pontos de Ônibus", "body": "Cuidado com pedestres descendo/subindo. Ônibus pode sair repentinamente. Não ultrapasse ônibus parado carregando passageiros — é muito perigoso." },
+            { "icon": "🚨", "title": "Passagem de Emergência (ambulância/bombeiro)", "body": "Ao ouvir sirene: reduza a velocidade, mude para à direita e LIBERE VIA. Se necessário, PARE no acostamento. NUNCA siga ambulância/carro de bombeiro — é infração." },
+            { "icon": "🛣️", "title": "Cruzamento sem Sinalização", "body": "Preferência de quem vem pela DIREITA. Se ambos chegam simultaneamente, quem vem pela direita passa. Reduza a velocidade ao se aproximar." },
+            { "icon": "🚧", "title": "Obras e Lombadas", "body": "Reduza velocidade drasticamente. Siga as orientações do agente ou sinalização temporária. Desvios podem ser perigosos — atenção total." },
+            { "icon": "🌉", "title": "Pontes e Viadutos", "body": "PROIBIDO ultrapassar em pontes. Reduza a velocidade se a ponte for estreita. Tome cuidado com entradas de água (chuva pesada). Em tempos de enchentes, podem ficar intransitáveis." }
+          ],
+          "highlights": [
+            { "type": "info", "text": "<strong>Quando ver viatura com sirene e giroflex:</strong> Mude para à direita, reduza a velocidade e PARE se necessário, liberando totalmente a via de passagem." },
+            { "type": "warn", "text": "<strong>Nunca acompanhe viaturas de emergência</strong> — é infração grave. Elas têm privilégio de circulação, você não!" }
+          ],
+          "quiz": [
+            {
+              "q": "Ao se aproximar de um ponto de ônibus com pessoas na fila esperando, o condutor deve:",
+              "opts": ["Manter a velocidade normal", "Buzinar para sinalizar sua chegada", "Reduzir a velocidade e estar atento para pessoas atravessando", "Mudar de via rapidamente"],
+              "correct": 2,
+              "exp": "O condutor deve reduzir a velocidade e estar atento a pedestres que podem se movimentar repentinamente (crianças são especialmente imprevisíveis)."
+            },
+            {
+              "q": "Qual a preferência de passagem em cruzamento SEM qualquer sinalização?",
+              "opts": ["Quem chegar primeiro", "Quem vem pela DIREITA", "Quem vem pela esquerda", "O veículo maior tem preferência"],
+              "correct": 1,
+              "exp": "Em cruzamento sem sinalização, a preferência é SEMPRE de quem vem pela DIREITA. Este é o princípio fundamental do CTB (Art. 29, § III)."
+            },
+            {
+              "q": "Seu veículo é um Uber passando próximo a uma escola. Qual é a velocidade máxima recomendada?",
+              "opts": ["60 km/h — normal da via", "30 km/h — conforme sinalização escolar", "Pode acelerar — é veículo de serviço", "20 km/h se crianças estiverem visíveis"],
+              "correct": 1,
+              "exp": "Próximo a escolas, a velocidade máxima é tipicamente 20-30 km/h conforme a sinalização específica. O risco de criança correndo na pista é altíssimo."
             }
           ]
         }
@@ -244,18 +406,75 @@
       "desc": "Direção defensiva, distância de segurança, condições adversas, fadiga ao volante e primeiros socorros.",
       "lessons": [
         {
-          "id": "defensiva",
-          "icon": "🛡️",
-          "title": "Direção Defensiva",
+          "id": "introducao3",
+          "icon": "📖",
+          "title": "Introdução",
           "type": "default",
           "concepts": [
-            { "icon": "👁️", "title": "Conhecimento", "body": "Conhecer as leis, placas e normas de trânsito — base obrigatória para qualquer condutor seguro." },
-            { "icon": "🔮", "title": "Previsão", "body": "Antecipar situações de risco antes que aconteçam, observando o comportamento dos outros e o ambiente." },
-            { "icon": "⏸️", "title": "Atenção", "body": "Manter foco total na condução, sem distrações (celular, rádio alto, conversas longas)." },
-            { "icon": "🎯", "title": "Habilidade e Decisão", "body": "Capacidade técnica de manobrar o veículo com segurança e tomar a decisão certa no momento certo." }
+            { "icon": "🎯", "title": "O que é dirigir com segurança?", "body": "Segurança no trânsito é o resultado de conhecimento técnico, postura defensiva, respeito às regras e responsabilidade com a vida humana." },
+            { "icon": "📊", "title": "Dados do trânsito no Brasil", "body": "O Brasil é um dos países com mais mortes no trânsito do mundo. A maioria dos acidentes envolve excesso de velocidade, álcool ou distração ao volante." },
+            { "icon": "🛡️", "title": "Segurança ativa vs passiva", "body": "Ativa: previne acidentes (freios, pneus, iluminação). Passiva: minimiza danos quando o acidente ocorre (airbag, cinto, para-choque)." }
           ],
           "highlights": [
-            { "type": "info", "text": "<strong>Os 5 princípios da direção defensiva:</strong><br>1. Conhecimento → Saber a lei<br>2. Atenção → Estar sempre alerta<br>3. Previsão → Antecipar o risco<br>4. Oportunidade → Agir na hora certa<br>5. Decisão → Tomar a atitude correta" }
+            { "type": "info", "text": "<strong>Os três fatores de risco no trânsito:</strong><br>• Fator humano (75-85% dos casos): erros do condutor, pedestres e passageiros<br>• Fator veicular: falhas mecânicas e falta de manutenção<br>• Fator viário: más condições de conservação das vias" }
+          ],
+          "quiz": [
+            {
+              "q": "Qual fator é responsável pela maioria dos acidentes de trânsito?",
+              "opts": ["Fator viário — más condições das estradas", "Fator veicular — falhas mecânicas", "Fator humano — erros dos condutores", "Fator climático — chuvas e neblina"],
+              "correct": 2,
+              "exp": "O fator humano responde por 75 a 85% dos acidentes de trânsito, incluindo erros de condutores, pedestres e passageiros. Velocidade excessiva, álcool e distração são as causas mais frequentes."
+            }
+          ]
+        },
+        {
+          "id": "normas-gerais",
+          "icon": "📋",
+          "title": "Normas Gerais de Circulação",
+          "type": "default",
+          "concepts": [
+            { "icon": "→", "title": "Regra geral: manter-se à direita", "body": "Em vias com mais de uma faixa, manter-se na faixa da direita. As faixas da esquerda são para ultrapassagem." },
+            { "icon": "🔄", "title": "Rotatória", "body": "Quem está na rotatória tem preferência. Quem vai entrar deve aguardar. Sinalize ao sair usando o pisca-pisca." },
+            { "icon": "🚦", "title": "Cruzamentos", "body": "Sem sinalização: prioridade para quem vem pela direita. Com placa de PARE: parada obrigatória. Com semáforo: obedecer o semáforo." },
+            { "icon": "📢", "title": "Uso da buzina", "body": "Apenas para sinalizar perigo iminente. Proibida à noite nas cidades, próxima a hospitais, escolas e igrejas. Buzinar sem necessidade é infração." },
+            { "icon": "💡", "title": "Uso dos faróis", "body": "Farol baixo: via pública à noite, túneis e neblina. Farol alto: rodovias sem iluminação. Farol alto é PROIBIDO com veículo à frente ou em vias com iluminação pública." },
+            { "icon": "🛣️", "title": "Velocidades máximas por tipo de via", "body": "Rodovia pista dupla: 110 km/h\nRodovia pista simples: 100 km/h\nVia de trânsito rápido: 80 km/h\nVia arterial: 60 km/h\nVia coletora: 40 km/h\nVia local: 30 km/h" }
+          ],
+          "highlights": [
+            { "type": "info", "text": "<strong>Obrigações antes de iniciar uma manobra:</strong><br>1. Verificar o espelho retrovisor<br>2. Acionar o pisca-pisca com antecedência mínima de 30 metros<br>3. Verificar o ponto cego (blind spot)<br>4. Executar a manobra com segurança" }
+          ],
+          "quiz": [
+            {
+              "q": "Em um cruzamento sem sinalização, dois veículos se aproximam simultaneamente. Quem tem preferência?",
+              "opts": ["Quem chegar primeiro", "Quem vem pela direita", "Quem vem pela esquerda", "O veículo maior"],
+              "correct": 1,
+              "exp": "Em cruzamento sem sinalização, a preferência é de quem vem pela DIREITA (Art. 29, III do CTB). Quem chegar pela esquerda deve ceder a passagem."
+            },
+            {
+              "q": "Em via com várias faixas, qual deve ser a faixa preferencial para circulação?",
+              "opts": ["A faixa da esquerda — mais rápida", "A faixa central", "A faixa da direita — reservando as demais para ultrapassagem", "Qualquer faixa, sem preferência"],
+              "correct": 2,
+              "exp": "O CTB determina que em vias com múltiplas faixas, o condutor deve manter-se na faixa da direita. As faixas da esquerda são reservadas para ultrapassagens."
+            }
+          ]
+        },
+        {
+          "id": "defensiva",
+          "icon": "🛡️",
+          "title": "Direção Defensiva e Segura",
+          "type": "default",
+          "concepts": [
+            { "icon": "👁️", "title": "1. Conhecimento", "body": "Conhecer as leis, placas e normas de trânsito — base obrigatória para qualquer condutor seguro." },
+            { "icon": "🔮", "title": "2. Previsão", "body": "Antecipar situações de risco antes que aconteçam, observando o comportamento dos outros e o ambiente." },
+            { "icon": "⏸️", "title": "3. Atenção", "body": "Manter foco total na condução, sem distrações (celular, rádio alto, conversas longas)." },
+            { "icon": "🎯", "title": "4. Habilidade e Decisão", "body": "Capacidade técnica de manobrar o veículo com segurança e tomar a decisão certa no momento certo." },
+            { "icon": "📏", "title": "Distância de segurança", "body": "Técnica dos 2 segundos: escolha um ponto fixo. O carro à frente passa — você deve passar pelo mesmo ponto com 2 segundos de diferença. Em chuva: 4 segundos." },
+            { "icon": "😴", "title": "Fadiga e sono ao volante", "body": "Micro-sono a 100 km/h: 28 metros percorridos sem controle! Pausa obrigatória a cada 2 horas em rodovias. Sinais: piscadas pesadas, pensamentos dispersos, dificuldade de manter a faixa." },
+            { "icon": "💧", "title": "Aquaplanagem", "body": "Perda de tração por camada de água entre pneu e asfalto. O que fazer: soltar o acelerador GRADUALMENTE, manter o volante firme. NUNCA frear ou esterçar bruscamente." }
+          ],
+          "highlights": [
+            { "type": "info", "text": "<strong>Os 5 princípios da direção defensiva:</strong><br>1. Conhecimento → Saber a lei<br>2. Atenção → Estar sempre alerta<br>3. Previsão → Antecipar o risco<br>4. Oportunidade → Agir na hora certa<br>5. Decisão → Tomar a atitude correta" },
+            { "type": "warn", "text": "<strong>Locais proibidos para ultrapassagem:</strong> faixa contínua, pontes, túneis, viadutos, cruzamentos, lombadas, curvas sem visibilidade, próximo a passagens de nível." }
           ],
           "quiz": [
             {
@@ -263,21 +482,29 @@
               "opts": ["Dirigir mais rápido com segurança", "Evitar acidentes independente dos erros alheios", "Economizar combustível", "Cumprir os limites de velocidade"],
               "correct": 1,
               "exp": "Direção defensiva visa evitar acidentes mesmo quando outros cometem erros. É uma postura ativa de prevenção, não apenas seguir regras passivamente."
+            },
+            {
+              "q": "Em caso de aquaplanagem, o condutor deve:",
+              "opts": ["Frear bruscamente", "Virar o volante rapidamente", "Soltar o acelerador gradualmente e manter o volante firme", "Acelerar para sair da área molhada"],
+              "correct": 2,
+              "exp": "Na aquaplanagem, frear ou esterçar bruscamente pode causar derrapagem. O correto é soltar o acelerador gradualmente, manter o volante firme e aguardar o veículo recuperar a tração."
+            },
+            {
+              "q": "Em rodovias, qual o intervalo máximo recomendado entre paradas para descanso?",
+              "opts": ["1 hora", "2 horas", "3 horas", "4 horas"],
+              "correct": 1,
+              "exp": "Em rodovias, recomenda-se pausa de pelo menos 15 minutos a cada 2 horas de condução. A fadiga ao volante é uma das principais causas de acidentes graves."
             }
           ]
         },
         {
-          "id": "distancia",
-          "icon": "📏",
-          "title": "Distância de Segurança",
-          "type": "default",
-          "concepts": [
-            { "icon": "📐", "title": "Regra prática", "body": "A cada 10 km/h de velocidade, mantenha 1 carro de distância (≈4m). A 60 km/h → 6 carros ≈ 25m. A 110 km/h → 11 carros ≈ 50m." },
-            { "icon": "🌧️", "title": "Chuva e superfície molhada", "body": "Em pista molhada, o espaçamento deve ser DOBRADO. O asfalto úmido pode triplicar a distância de frenagem." },
-            { "icon": "🚛", "title": "Veículos pesados", "body": "Caminhões e ônibus precisam de distância de frenagem até 4x maior que automóveis. Não corte a frente deles!" }
-          ],
+          "id": "teste3",
+          "icon": "🏆",
+          "title": "Teste seus conhecimentos!",
+          "type": "quiz-only",
+          "concepts": [],
           "highlights": [
-            { "type": "info", "text": "<strong>Técnica dos 2 segundos:</strong> escolha um ponto fixo na pista. O veículo à sua frente passa por ele. Você deve passar pelo mesmo ponto com pelo menos 2 segundos de diferença. Em chuva: 4 segundos." }
+            { "type": "info", "text": "Coloque em prática o que aprendeu sobre segurança no trânsito. Bom teste!" }
           ],
           "quiz": [
             {
@@ -285,51 +512,24 @@
               "opts": ["10 metros", "25 metros", "50 metros", "100 metros"],
               "correct": 2,
               "exp": "A regra prática é manter 1 carro por cada 10 km/h. A 100 km/h, são 10 carros ≈ 45-50 metros. Em condições de chuva ou pista molhada, esta distância deve ser dobrada."
-            }
-          ]
-        },
-        {
-          "id": "condadv",
-          "icon": "🌧️",
-          "title": "Condições Adversas",
-          "type": "default",
-          "concepts": [
-            { "icon": "🌧️", "title": "Chuva", "body": "Reduza a velocidade, aumente a distância de segurança, ligue os faróis baixos e use o limpador de para-brisa." },
-            { "icon": "🌫️", "title": "Neblina", "body": "Ligue o farol de neblina (luz auxiliar de névoa), reduza muito a velocidade, evite ultrapassagens." },
-            { "icon": "💧", "title": "Aquaplanagem", "body": "Quando há camada de água entre o pneu e o asfalto. O veículo perde a tração. Solte o acelerador gradualmente, mantenha o volante firme. NÃO freie bruscamente!" },
-            { "icon": "☀️", "title": "Ofuscamento solar", "body": "Use o quebra-sol, reduza a velocidade e aumente a distância. O ofuscamento pode tirar a visão por alguns segundos." }
-          ],
-          "highlights": [
-            { "type": "warn", "text": "<strong>Aquaplanagem:</strong> frear ou esterçar bruscamente pode causar derrapagem. O correto é soltar o acelerador gradualmente, manter o volante firme na direção desejada e aguardar o veículo recuperar a tração." }
-          ],
-          "quiz": [
+            },
             {
-              "q": "Em caso de aquaplanagem, o condutor deve:",
-              "opts": ["Frear bruscamente para parar o veículo", "Virar o volante rapidamente para a direita", "Soltar o acelerador gradualmente e manter o volante firme", "Acelerar para sair da área molhada"],
-              "correct": 2,
-              "exp": "Na aquaplanagem, frear ou esterçar bruscamente pode causar derrapagem. O correto é soltar o acelerador gradualmente, manter o volante firme na direção desejada e aguardar o veículo recuperar a tração."
-            }
-          ]
-        },
-        {
-          "id": "socorro",
-          "icon": "🚑",
-          "title": "Primeiros Socorros",
-          "type": "default",
-          "concepts": [
-            { "icon": "1️⃣", "title": "PROTEGER — Sinalizar o local", "body": "Sinalize o local para evitar novos acidentes. Ligue o pisca-alerta e coloque triângulo de sinalização a pelo menos 30m." },
-            { "icon": "2️⃣", "title": "ALERTAR — Chamar socorro", "body": "Ligue imediatamente: 192 (SAMU), 193 (Bombeiros) ou 190 (PM). Informe localização, número de vítimas e o estado delas." },
-            { "icon": "3️⃣", "title": "SOCORRER — Sem mover vítimas", "body": "Mantenha a vítima consciente conversando. Não remova capacete (risco de lesão cervical). Só mova em caso de risco imediato (fogo, afogamento)." }
-          ],
-          "highlights": [
-            { "type": "warn", "text": "<strong>NUNCA mova a vítima sem necessidade</strong> — pode agravar lesões na coluna. Abandonar vítima de acidente é crime previsto no CTB e no Código Penal." }
-          ],
-          "quiz": [
-            {
-              "q": "Em caso de acidente, qual a sequência correta de ações (PAS)?",
-              "opts": ["Socorrer, Alertar, Proteger", "Proteger, Alertar, Socorrer", "Alertar, Proteger, Socorrer", "Qualquer ordem é correta"],
+              "q": "O uso do farol alto (luz plena) é PROIBIDO quando:",
+              "opts": ["Em rodovias sem iluminação à noite", "Na presença de veículos à frente ou em sentido contrário", "Em neblina intensa", "Em estradas de terra"],
               "correct": 1,
-              "exp": "A sequência PAS: Proteger (sinalizar e evitar novos acidentes), Alertar (ligar SAMU/Bombeiros), Socorrer (prestar primeiros socorros sem remover a vítima desnecessariamente)."
+              "exp": "O farol alto é proibido quando há veículos à frente ou em sentido contrário, e em vias com iluminação pública. O alto ofusca os outros motoristas e causa acidentes."
+            },
+            {
+              "q": "Em caso de acidente com vítimas, qual a sequência correta (PAS)?",
+              "opts": ["Socorrer, Alertar, Proteger", "Proteger, Alertar, Socorrer", "Alertar, Proteger, Socorrer", "Proteger, Socorrer, Alertar"],
+              "correct": 1,
+              "exp": "PAS: Proteger (sinalizar e evitar novos acidentes), Alertar (ligar SAMU/Bombeiros), Socorrer (prestar primeiros socorros sem remover a vítima desnecessariamente)."
+            },
+            {
+              "q": "Quais sinais indicam fadiga ao volante?",
+              "opts": ["Acelerar mais rápido e buzinar muito", "Piscadas pesadas, pensamentos dispersos e dificuldade de manter a faixa", "Ficar mais calmo e dirigir mais devagar", "Sentir fome e sede com frequência"],
+              "correct": 1,
+              "exp": "Piscadas frequentes e pesadas, pensamentos dispersos, dificuldade de manter a faixa e micro-sonos são sinais clássicos de fadiga ao volante."
             }
           ]
         }
@@ -344,17 +544,80 @@
       "desc": "Meio ambiente, cidadania no trânsito, questões ecológicas e a responsabilidade socioambiental do condutor.",
       "lessons": [
         {
-          "id": "meioambiente",
-          "icon": "🌿",
-          "title": "Meio Ambiente e Trânsito",
+          "id": "introducao4",
+          "icon": "📖",
+          "title": "Introdução",
           "type": "default",
           "concepts": [
-            { "icon": "💨", "title": "Poluição do ar", "body": "Veículos emitem CO₂, CO, NOx e material particulado. Veículos antigos ou mal regulados emitem até 10x mais poluentes." },
-            { "icon": "🔊", "title": "Poluição sonora", "body": "Buzinas desnecessárias, escapamentos barulhentos e acelerações excessivas contribuem para a poluição sonora urbana." },
-            { "icon": "🛢️", "title": "Descarte de resíduos", "body": "Jogar lixo, óleo ou fluidos na pista ou em bocas de lobo é crime ambiental além de infração de trânsito." }
+            { "icon": "🌍", "title": "Trânsito e responsabilidade social", "body": "Dirigir é um ato social. As escolhas do condutor impactam o meio ambiente, a saúde pública e a qualidade de vida de toda a comunidade." },
+            { "icon": "🤝", "title": "Cidadania no trânsito", "body": "Respeitar pedestres, ciclistas, idosos e PCDs é dever legal e moral. O trânsito humanizado salva vidas." },
+            { "icon": "♻️", "title": "Sustentabilidade", "body": "A direção econômica reduz emissões, economiza combustível e contribui para um trânsito mais sustentável e menos poluente." }
           ],
           "highlights": [
-            { "type": "info", "text": "O Programa de Inspeção e Manutenção de Veículos (I/M) avalia periodicamente as emissões dos veículos e exige manutenção nos que poluem acima dos limites. Manter o veículo revisado reduz emissões em até 30%." }
+            { "type": "info", "text": "<strong>Impacto dos veículos:</strong> O setor de transporte responde por cerca de 30% das emissões de CO₂ no Brasil. Um veículo mal regulado emite até 10 vezes mais poluentes que um veículo em boas condições." }
+          ],
+          "quiz": [
+            {
+              "q": "O setor de transporte representa aproximadamente qual percentual das emissões de poluentes nas cidades brasileiras?",
+              "opts": ["5 a 10%", "15 a 20%", "25 a 35%", "50 a 60%"],
+              "correct": 2,
+              "exp": "O setor de transporte responde por cerca de 25 a 35% das emissões de poluentes nas cidades brasileiras, sendo uma das principais fontes de degradação da qualidade do ar."
+            }
+          ]
+        },
+        {
+          "id": "primeiros-socorros",
+          "icon": "🚑",
+          "title": "Cuidados e Primeiros Socorros",
+          "type": "default",
+          "concepts": [
+            { "icon": "1️⃣", "title": "PROTEGER — Sinalizar o local", "body": "Sinalize o local para evitar novos acidentes. Ligue o pisca-alerta e coloque o triângulo de sinalização a pelo menos 30m do veículo." },
+            { "icon": "2️⃣", "title": "ALERTAR — Chamar socorro", "body": "Ligue imediatamente: 192 (SAMU), 193 (Bombeiros) ou 190 (PM). Informe localização exata, número de vítimas e estado delas." },
+            { "icon": "3️⃣", "title": "SOCORRER — Sem mover vítimas", "body": "Mantenha a vítima consciente conversando. Não remova o capacete de motociclistas (risco de lesão cervical). Só mova em caso de risco iminente (fogo, afogamento)." },
+            { "icon": "🩺", "title": "RCP — Reanimação Cardiopulmonar", "body": "Se a vítima não respira: 30 compressões no peito (centro do esterno, 5-6 cm de profundidade) + 2 ventilações. Mantenha ritmo de 100-120 compressões por minuto." },
+            { "icon": "🩸", "title": "Hemorragias", "body": "Comprima o ferimento com pano limpo e firmemente. Não retire o objeto que causou o ferimento. Eleve o membro se possível." },
+            { "icon": "🔥", "title": "Queimaduras", "body": "Resfrie a área com água corrente por 10 minutos. Nunca use gelo, manteiga ou pasta de dente. Cubra com pano limpo e não estoure bolhas." }
+          ],
+          "highlights": [
+            { "type": "warn", "text": "<strong>NUNCA mova a vítima sem necessidade</strong> — pode agravar lesões na coluna. Abandonar vítima de acidente é CRIME previsto no CTB e no Código Penal brasileiro." },
+            { "type": "info", "text": "<strong>Números de emergência:</strong><br>• 192 → SAMU (urgências médicas)<br>• 193 → Bombeiros<br>• 190 → Polícia Militar<br>• 191 → Polícia Rodoviária Federal" }
+          ],
+          "quiz": [
+            {
+              "q": "Em caso de acidente com vítimas, qual a sequência correta (PAS)?",
+              "opts": ["Socorrer, Alertar, Proteger", "Proteger, Alertar, Socorrer", "Alertar, Proteger, Socorrer", "Qualquer ordem é correta"],
+              "correct": 1,
+              "exp": "PAS: Proteger (sinalizar e evitar novos acidentes), Alertar (ligar SAMU/Bombeiros/PM), Socorrer (prestar primeiros socorros sem remover a vítima desnecessariamente)."
+            },
+            {
+              "q": "Qual o número do SAMU para chamar socorro em emergências médicas?",
+              "opts": ["190", "191", "192", "193"],
+              "correct": 2,
+              "exp": "O SAMU (Serviço de Atendimento Móvel de Urgência) é acionado pelo número 192. Bombeiros: 193. Polícia Militar: 190."
+            },
+            {
+              "q": "Abandonar vítima de acidente de trânsito é:",
+              "opts": ["Não é crime — o motorista não é médico", "Contravenção penal — multa simples", "Crime previsto no CTB e no Código Penal", "Infração grave de trânsito apenas"],
+              "correct": 2,
+              "exp": "Abandonar vítima de acidente é CRIME previsto tanto no Código de Trânsito Brasileiro quanto no Código Penal. Todo condutor tem obrigação legal de prestar socorro."
+            }
+          ]
+        },
+        {
+          "id": "meio-ambiente",
+          "icon": "🌿",
+          "title": "Cuidados com o Meio Ambiente",
+          "type": "default",
+          "concepts": [
+            { "icon": "💨", "title": "Poluição do ar", "body": "Veículos emitem CO₂, CO, NOx e material particulado. Um veículo antigo ou mal regulado pode emitir até 10x mais poluentes." },
+            { "icon": "🔊", "title": "Poluição sonora", "body": "Buzinas desnecessárias, escapamentos barulhentos e acelerações excessivas contribuem para a poluição sonora urbana, prejudicando a saúde." },
+            { "icon": "🛢️", "title": "Descarte incorreto de resíduos", "body": "Jogar lixo, óleo ou fluidos na pista ou em bocas de lobo é crime ambiental além de infração de trânsito. O óleo de motor deve ser descartado em postos coletores." },
+            { "icon": "⚡", "title": "Direção econômica", "body": "Evite arrancadas bruscas, mantenha velocidade constante, calibre os pneus corretamente e faça manutenção preventiva — reduz consumo e emissões em até 30%." },
+            { "icon": "🔧", "title": "Programa I/M (Inspeção e Manutenção)", "body": "Avalia periodicamente as emissões dos veículos. Veículos com emissão acima dos limites devem ser reparados antes de circular." },
+            { "icon": "♻️", "title": "Descarte de pneus e baterias", "body": "Pneus velhos e baterias contêm materiais tóxicos. O descarte inadequado contamina solo e água. Leve ao fabricante ou ponto de coleta autorizado." }
+          ],
+          "highlights": [
+            { "type": "info", "text": "<strong>Dicas de direção econômica:</strong><br>• Manter velocidade constante (cruzeiro)<br>• Evitar freadas bruscas<br>• Trocar de marcha na rotação certa<br>• Desligar o motor em paradas superiores a 1 minuto<br>• Manter pneus calibrados" }
           ],
           "quiz": [
             {
@@ -362,72 +625,48 @@
               "opts": ["Arrecadar taxas para o governo", "Reduzir a poluição causada por veículos com problemas mecânicos", "Verificar a documentação dos veículos", "Controlar a quantidade de veículos nas ruas"],
               "correct": 1,
               "exp": "O Programa I/M avalia periodicamente as emissões dos veículos e exige manutenção nos que poluem acima dos limites. Isso reduz significativamente a poluição do ar nas cidades."
+            },
+            {
+              "q": "Jogar óleo de motor em bueiros ou no solo é:",
+              "opts": ["Infração de trânsito leve", "Permitido se for em pequena quantidade", "Crime ambiental e infração de trânsito", "Apenas proibido em zonas urbanas"],
+              "correct": 2,
+              "exp": "O descarte incorreto de óleo de motor é crime ambiental (Lei 9.605/98) e infração de trânsito. Um litro de óleo pode contaminar até 1 milhão de litros de água."
             }
           ]
         },
         {
-          "id": "cidadania",
-          "icon": "🤝",
-          "title": "Cidadania no Trânsito",
-          "type": "default",
-          "concepts": [
-            { "icon": "♿", "title": "Respeito às prioridades", "body": "Idosos, grávidas e PCDs têm prioridade em vagas e travessias. Estacionar em vaga reservada sem autorização é infração grave." },
-            { "icon": "🚑", "title": "Passagem de emergência", "body": "Sempre dar passagem imediata a ambulâncias, bombeiros e polícia. Mova-se para a direita e reduza a velocidade." },
-            { "icon": "😤", "title": "Agressividade no trânsito", "body": "Buzinar desnecessariamente, fazer gestos ofensivos ou dirigir de forma agressiva são infrações e podem configurar crime." }
-          ],
+          "id": "teste4",
+          "icon": "🏆",
+          "title": "Teste seus conhecimentos!",
+          "type": "quiz-only",
+          "concepts": [],
           "highlights": [
-            { "type": "info", "text": "Ao se deparar com veículo de emergência com sirene ligada: mova-se para a direita, reduza a velocidade e pare se necessário, criando um corredor. Parar abruptamente no meio pode bloquear a via." }
+            { "type": "info", "text": "Teste final do Módulo 4! Você está quase pronto para o exame real do DETRAN." }
           ],
           "quiz": [
             {
-              "q": "Quando uma ambulância com sirene se aproxima, o condutor deve:",
-              "opts": ["Parar no meio da pista imediatamente", "Mover-se para a direita e deixar a pista livre", "Aumentar a velocidade para sair da frente", "Ignorar — eles têm sinal de prioridade"],
+              "q": "Quando uma ambulância com sirene e giroflex se aproxima, o condutor deve:",
+              "opts": ["Parar abruptamente no meio da pista", "Mover-se para a direita e liberar a via", "Aumentar a velocidade para sair da frente", "Ignorar — ambulâncias têm prioridade automaticamente"],
               "correct": 1,
               "exp": "O correto é mover-se para a direita, reduzir a velocidade e parar se necessário, criando um corredor para o veículo de emergência passar. Parar abruptamente no meio pode bloquear a via."
-            }
-          ]
-        },
-        {
-          "id": "acessibilidade",
-          "icon": "♿",
-          "title": "Acessibilidade",
-          "type": "default",
-          "concepts": [
-            { "icon": "🅿️", "title": "Vagas reservadas", "body": "Vagas com símbolo de acessibilidade são exclusivas para PCD com credencial. Uso indevido: infração GRAVE + remoção do veículo." },
-            { "icon": "🚶", "title": "Travessias especiais", "body": "Semáforos com sinal sonoro, piso tátil e rampas nas calçadas devem ser respeitados pelos motoristas." }
-          ],
-          "highlights": [
-            { "type": "warn", "text": "<strong>Estacionar em vaga de PCD sem o credencial:</strong> infração GRAVE — 5 pontos, multa e remoção do veículo. Não importa o tempo — não há exceções." }
-          ],
-          "quiz": [
+            },
             {
               "q": "Estacionar em vaga reservada para portadores de deficiência sem autorização é:",
               "opts": ["Infração leve", "Infração média", "Infração grave com remoção do veículo", "Não é infração se for por pouco tempo"],
               "correct": 2,
-              "exp": "Estacionar em vaga de PCD sem o credencial é infração GRAVE: 5 pontos, multa e remoção do veículo. Não importa o tempo — não há exceções."
-            }
-          ]
-        },
-        {
-          "id": "direcaoeconomica",
-          "icon": "☀️",
-          "title": "Direção Econômica",
-          "type": "default",
-          "concepts": [
-            { "icon": "⚡", "title": "Aceleração suave", "body": "Evite arrancadas bruscas. Acelere gradualmente. Isso reduz consumo em até 20% em vias urbanas." },
-            { "icon": "🔄", "title": "Motor em marcha-lenta", "body": "Desligue o motor em paradas superiores a 1 minuto. Motor parado não consome." },
-            { "icon": "💨", "title": "Calibragem dos pneus", "body": "Pneu com a pressão correta economiza até 5% de combustível e aumenta a vida útil do pneu em 30%." },
-            { "icon": "🛞", "title": "Manutenção preventiva", "body": "Filtros limpos, óleo trocado e velas em bom estado fazem o motor funcionar com melhor eficiência." }
-          ],
-          "highlights": [
-            { "type": "info", "text": "Manter velocidade constante (velocidade de cruzeiro) e antecipar as situações para evitar freadas bruscas é a técnica mais eficaz para economizar combustível e reduzir emissões." }
-          ],
-          "quiz": [
+              "exp": "Estacionar em vaga de PCD sem o credencial é infração GRAVE: 5 pontos, multa de R$195,23 e remoção do veículo. Não há exceções."
+            },
             {
               "q": "Qual técnica de condução reduz o consumo de combustível e as emissões?",
-              "opts": ["Acelerar bruscamente para atingir velocidade logo", "Manter velocidade constante e evitar frenagens desnecessárias", "Usar marchas baixas a altas velocidades", "Deixar o motor aquecendo por 10 minutos antes de partir"],
+              "opts": ["Acelerar bruscamente para atingir a velocidade logo", "Manter velocidade constante e evitar frenagens desnecessárias", "Usar marchas baixas a altas velocidades", "Deixar o motor aquecendo por 10 minutos antes de partir"],
               "correct": 1,
-              "exp": "Manter velocidade constante (velocidade de cruzeiro) e antecipar as situações para evitar freadas bruscas é a técnica mais eficaz para economizar combustível e reduzir emissões."
+              "exp": "Manter velocidade constante e antecipar as situações para evitar freadas bruscas é a técnica mais eficaz para economizar combustível e reduzir emissões."
+            },
+            {
+              "q": "O correto destino dos pneus usados é:",
+              "opts": ["Jogar no lixo comum", "Queimar em local afastado", "Entregar ao fabricante ou ponto de coleta autorizado", "Enterrar no jardim"],
+              "correct": 2,
+              "exp": "Pneus usados devem ser entregues ao fabricante ou a ponto de coleta autorizado. O descarte incorreto é crime ambiental. Fabricantes são obrigados por lei a recolher os pneus usados."
             }
           ]
         }
@@ -442,46 +681,108 @@
     { "q": "Qual o limite de velocidade em via local urbana?", "opts": ["20 km/h", "30 km/h", "40 km/h", "50 km/h"], "correct": 1, "exp": "Vias locais urbanas têm velocidade máxima de 30 km/h conforme o CTB, Art. 61." },
     { "q": "O condutor que se envolver em acidente com danos apenas materiais deve:", "opts": ["Sair do local imediatamente", "Aguardar a polícia obrigatoriamente", "Anotar dados das partes envolvidas e comunicar a autoridade", "Ligar para o SAMU"], "correct": 2, "exp": "Em acidentes sem vítimas, as partes devem anotar dados (nome, CNH, placa) e comunicar à autoridade, não sendo obrigatória a permanência no local se houver acordo." },
     { "q": "Sinalizar uma parada ou manobra é obrigatório com quanto de antecedência mínima?", "opts": ["5 metros", "15 metros", "30 metros", "50 metros"], "correct": 2, "exp": "O CTB determina que o condutor deve sinalizar com antecedência mínima de 30 metros antes de realizar paradas, retornos ou mudanças de direção." },
-    { "q": "O que significa a placa com triângulo amarelo e símbolo de exclamação?", "opts": ["Proibido ultrapassar", "Perigo inespecífico — atenção redobrada", "Velocidade mínima obrigatória", "Sentido proibido"], "correct": 1, "exp": "Placa triangular amarela com '!' indica 'Perigo' de forma genérica — alerta para situação de risco que não tem placa específica, exigindo atenção redobrada." },
-    { "q": "Qual é o limite de alcoolemia no sangue a partir do qual configura crime de trânsito?", "opts": ["0,2 g/l", "0,3 g/l", "0,6 g/l", "1,0 g/l"], "correct": 2, "exp": "A partir de 0,6 g/L de álcool no sangue (ou 0,34 mg/L no ar expirado), há crime de trânsito com pena de 6 meses a 3 anos de detenção." },
-    { "q": "Em relação ao cinto de segurança, o CTB determina que:", "opts": ["Apenas o motorista é obrigado", "Motorista e passageiro do banco da frente", "Todos os ocupantes são obrigados", "Crianças acima de 10 anos não precisam"], "correct": 2, "exp": "O cinto é obrigatório para TODOS os ocupantes do veículo, em todas as posições (dianteiro e traseiro). O condutor responde pela infração de quem não usar." },
-    { "q": "O farol baixo (luz de cruzamento) é obrigatório durante o dia em:", "opts": ["Apenas à noite em qualquer via", "Rodovias, mesmo com bom tempo", "Apenas em curvas perigosas", "Nunca — é facultativo de dia"], "correct": 1, "exp": "Desde 2016, o farol baixo é obrigatório em rodovias durante o dia, mesmo com boa visibilidade. Nas cidades, é obrigatório de noite." }
+    { "q": "O que significa a placa com triângulo amarelo e símbolo de exclamação?", "opts": ["Proibido ultrapassar", "Perigo inespecífico — atenção redobrada", "Velocidade mínima obrigatória", "Sentido proibido"], "correct": 1, "exp": "Placa triangular amarela com '!' indica 'Perigo' genérico — alerta para situação de risco sem placa específica, exigindo atenção redobrada." },
+    { "q": "Qual é o limite de alcoolemia a partir do qual configura CRIME de trânsito?", "opts": ["0,2 g/l", "0,3 g/l", "0,6 g/l", "1,0 g/l"], "correct": 2, "exp": "A partir de 0,6 g/L de álcool no sangue (ou 0,34 mg/L no ar expirado), há crime de trânsito com pena de 6 meses a 3 anos de detenção." },
+    { "q": "Em relação ao cinto de segurança, o CTB determina que:", "opts": ["Apenas o motorista é obrigado", "Motorista e passageiro do banco da frente", "Todos os ocupantes são obrigados", "Crianças acima de 10 anos não precisam"], "correct": 2, "exp": "O cinto é obrigatório para TODOS os ocupantes do veículo, em todas as posições. O condutor responde pela infração de quem não usar." },
+    { "q": "O farol baixo (luz de cruzamento) é obrigatório durante o dia em:", "opts": ["Apenas à noite em qualquer via", "Rodovias, mesmo com bom tempo", "Apenas em curvas perigosas", "Nunca — é facultativo de dia"], "correct": 1, "exp": "Desde 2016, o farol baixo é obrigatório em rodovias durante o dia, mesmo com boa visibilidade. Nas cidades, é obrigatório de noite." },
+    { "q": "Em um cruzamento sem sinalização, dois veículos se aproximam. Quem tem preferência?", "opts": ["Quem chegar primeiro", "Quem vem pela direita", "Quem vem pela esquerda", "O veículo maior"], "correct": 1, "exp": "Em cruzamento sem sinalização, a preferência é de quem vem pela DIREITA (Art. 29, III do CTB)." },
+    { "q": "A suspensão da CNH ocorre quando o condutor comum acumula quantos pontos em 12 meses?", "opts": ["15 pontos", "20 pontos", "25 pontos", "30 pontos"], "correct": 1, "exp": "O condutor comum que acumular 20 pontos em 12 meses tem a CNH suspensa por 6 meses a 1 ano. Motoristas profissionais têm limite de 30 pontos." },
+    { "q": "Qual a velocidade máxima permitida em rodovia de pista dupla para automóveis?", "opts": ["80 km/h", "90 km/h", "100 km/h", "110 km/h"], "correct": 3, "exp": "Em rodovias de pista dupla, a velocidade máxima para automóveis é 110 km/h. Em pista simples, o limite é 100 km/h." },
+    { "q": "O que deve fazer o condutor ao ver o sinal amarelo do semáforo?", "opts": ["Acelerar para passar antes de fechar", "Parar, exceto se a paragem puder causar acidente", "Sempre parar imediatamente", "Manter a velocidade atual"], "correct": 1, "exp": "O sinal amarelo significa atenção: o condutor deve parar, exceto quando estiver tão próximo que a paragem puder causar acidente. Nunca se deve acelerar ao ver o amarelo." },
+    { "q": "Conduzir veículo sem estar habilitado é infração de que natureza?", "opts": ["Leve — 3 pontos", "Média — 4 pontos", "Grave — 5 pontos", "Gravíssima — 7 pontos + retenção"], "correct": 3, "exp": "Transitar sem CNH é infração GRAVÍSSIMA: 7 pontos e retenção do veículo. Conduzir com CNH vencida (até 30 dias) é infração grave." },
+    { "q": "O sinal sonoro (buzina) pode ser usado para:", "opts": ["Cumprimentar amigos", "Expressar impaciência no trânsito", "Sinalizar situação de emergência ou perigo iminente", "Avisar que vai ultrapassar em rodovia"], "correct": 2, "exp": "A buzina só deve ser usada para sinalizar situação de emergência ou perigo iminente. O uso desnecessário é infração." },
+    { "q": "A placa PARE exige do condutor:", "opts": ["Reduzir a velocidade para 20 km/h", "Parar apenas se houver outros veículos", "Parar completamente antes de entrar na via", "Dar passagem mas não parar necessariamente"], "correct": 2, "exp": "A placa PARE exige parada COMPLETA antes de entrar na via, mesmo que ela aparente estar livre. Reduzir a velocidade sem parar é infração gravíssima." },
+    { "q": "Em rotatória, quem tem preferência de passagem?", "opts": ["Quem entra na rotatória", "Quem está circulando dentro da rotatória", "O veículo maior", "Quem chega pela direita"], "correct": 1, "exp": "Na rotatória, quem já está circulando dentro dela tem preferência de passagem. Quem vai entrar deve aguardar a passagem dos veículos que já estão na rotatória." },
+    { "q": "A criança com menos de 10 anos deve viajar em automóvel:", "opts": ["No banco traseiro, sem restrição adicional", "No banco da frente com cinto", "No banco traseiro em dispositivo de retenção adequado à sua idade/peso", "Em qualquer posição com cinto adulto"], "correct": 2, "exp": "Crianças menores de 10 anos devem viajar no banco traseiro, em dispositivo de retenção adequado (cadeirinha, assento de elevação ou cinto adaptador) conforme peso e altura." },
+    { "q": "Em caso de aquaplanagem, o que o condutor deve fazer?", "opts": ["Frear bruscamente", "Acelerar para sair da água", "Virar o volante para a direita", "Soltar o acelerador e manter o volante firme"], "correct": 3, "exp": "Na aquaplanagem, o correto é soltar o acelerador gradualmente e manter o volante firme. Frear ou esterçar bruscamente pode causar derrapagem e perda total do controle." },
+    { "q": "Qual o número do SAMU para chamar socorro médico emergencial?", "opts": ["190", "191", "192", "193"], "correct": 2, "exp": "O SAMU (Serviço de Atendimento Móvel de Urgência) é acionado pelo número 192. Para bombeiros: 193. Para polícia: 190." },
+    { "q": "O excesso de velocidade acima de 50% do limite é classificado como:", "opts": ["Infração grave", "Infração gravíssima", "Infração gravíssima com fator multiplicador 3", "Infração leve"], "correct": 2, "exp": "Excesso de velocidade acima de 50% do limite é infração GRAVÍSSIMA com multiplicador ×3: multa de R$880,41 e retenção do veículo." },
+    { "q": "Jogar qualquer objeto na pista ou fora do veículo em movimento é:", "opts": ["Permitido se for orgânico", "Infração leve", "Infração grave", "Infração gravíssima"], "correct": 2, "exp": "Jogar qualquer objeto na pista ou fora do veículo é infração GRAVE: 5 pontos na CNH e multa. Além de poluir o ambiente, representa risco para outros condutores." },
+    { "q": "O condutor que não der preferência ao pedestre na faixa de travessia comete infração:", "opts": ["Leve — 3 pontos", "Média — 4 pontos", "Grave — 5 pontos", "Gravíssima — 7 pontos"], "correct": 2, "exp": "Não dar preferência ao pedestre na faixa de travessia é infração GRAVE: 5 pontos na CNH e multa de R$195,23." },
+    { "q": "A partir de quantos anos crianças podem viajar no banco dianteiro?", "opts": ["7 anos", "8 anos", "10 anos", "12 anos"], "correct": 2, "exp": "Crianças menores de 10 anos devem viajar no banco traseiro. A partir dos 10 anos, podem viajar no banco dianteiro, com cinto de segurança." },
+    { "q": "O farol de neblina deve ser usado:", "opts": ["Sempre que está escuro", "Apenas em neblina e chuva intensa com baixa visibilidade", "Em qualquer condição climática adversa", "Nunca — é apenas decorativo"], "correct": 1, "exp": "O farol de neblina deve ser usado apenas em neblina e chuva muito intensa que reduz a visibilidade. Usá-lo em outras situações pode ofuscar outros motoristas." },
+    { "q": "Um condutor ultrapassa a linha contínua amarela para ultrapassar. Isso é:", "opts": ["Permitido se houver boa visibilidade", "Infração leve", "Infração grave", "Infração gravíssima"], "correct": 2, "exp": "Ultrapassar a linha contínua amarela é infração GRAVE: 5 pontos na CNH e multa de R$195,23. A linha contínua proíbe ultrapassagem independentemente da visibilidade." },
+    { "q": "Qual é a penalidade administrativa por dirigir sob efeito de álcool?", "opts": ["Advertência e 3 pontos", "Multa de R$293,47 e 5 pontos", "Multa de R$2.934,70 + suspensão de 12 meses", "Multa de R$1.467,35 e 7 pontos"], "correct": 2, "exp": "Dirigir com qualquer detecção de álcool resulta em multa de R$2.934,70 (gravíssima ×10), 7 pontos, suspensão por 12 meses e retenção do veículo." },
+    { "q": "O triângulo de sinalização deve ser colocado a que distância mínima do veículo em pane em via urbana?", "opts": ["10 metros", "30 metros", "50 metros", "100 metros"], "correct": 1, "exp": "Em vias urbanas, o triângulo de sinalização deve ser posicionado a pelo menos 30 metros do veículo em pane. Em rodovias, a distância recomendada é de 100 metros." },
+    { "q": "Estacionar em frente a saídas de garagem é:", "opts": ["Permitido por até 30 minutos", "Infração leve se for rápido", "Infração média — pode ser removido", "Infração grave em qualquer caso"], "correct": 2, "exp": "Estacionar obstruindo a saída de garagem é infração MÉDIA: 4 pontos na CNH, multa de R$130,16 e o veículo pode ser removido pelo agente de trânsito." },
+    { "q": "O que fazer quando uma ambulância se aproxima com sirene ligada?", "opts": ["Parar abruptamente no meio da pista", "Mover-se para a direita e liberar a via", "Aumentar a velocidade para sair da frente", "Ignorar e manter a velocidade constante"], "correct": 1, "exp": "Mover-se para a direita, reduzir a velocidade e parar se necessário, liberando o máximo de espaço para a ambulância passar. É seu dever legal." },
+    { "q": "Qual é a sequência correta de ações em caso de acidente (PAS)?", "opts": ["Socorrer, Alertar, Proteger", "Proteger, Alertar, Socorrer", "Alertar, Proteger, Socorrer", "Qualquer ordem sem importância"], "correct": 1, "exp": "PAS: Proteger (sinalizar), Alertar (ligar emergência), Socorrer (dar primeiros socorros). Nessa ordem — nunca faça diferente." },
+    { "q": "Qual é a distância mínima lateral ao ultrapassar um ciclista?", "opts": ["0,5 m", "0,75 m", "1,5 m", "2,0 m"], "correct": 2, "exp": "O CTB determina distância mínima de 1,5 metros ao ultrapassar ciclistas, garantindo segurança do ciclista e evitando infração grave." },
+    { "q": "Qual a multa por não usar o cinto de segurança?", "opts": ["R$88,38", "R$130,16", "R$195,23", "R$293,47"], "correct": 2, "exp": "Não usar cinto é infração GRAVE: multa de R$195,23 e 5 pontos na CNH — por cada ocupante sem cinto." },
+    { "q": "Quanto tempo em rodovia sem parar é considerado seguro antes de uma pausa obrigatória?", "opts": ["1 hora", "2 horas", "3 horas", "4 horas"], "correct": 1, "exp": "Em rodovias, recomenda-se pausa de 15 minutos a cada 2 horas de condução contínua. Fadiga ao volante é tão perigosa quanto álcool." },
+    { "q": "Dirigir com a CNH suspensa é:", "opts": ["Infração leve", "Infração grave", "Crime de trânsito com detenção", "Apenas multa leve (R$88)"], "correct": 2, "exp": "Dirigir com CNH suspensa é CRIME de trânsito previsto no CTB: multa gravíssima, retenção do veículo e possível prisão em flagrante." },
+    { "q": "Em cruzamento SEM sinalização, qual princípio se aplica?", "opts": ["Quem tiver pressa passa primeiro", "Quem vem pela DIREITA tem preferência", "Sempre o veículo maior", "Todos devem parar"], "correct": 1, "exp": "Em cruzamento sem sinalização, a preferência é SEMPRE de quem vem pela DIREITA. Regra obrigatória do CTB — Art. 29, § III." },
+    { "q": "Usar o celular ao dirigir é:", "opts": ["Permitido se usar viva-voz", "Permitido se colocar no suporte", "Infração GRAVE — 5 pontos", "Apenas advertência"], "correct": 2, "exp": "Usar celular (inclusive viva-voz) ao dirigir é infração GRAVE: 5 pontos na CNH e multa de R$293,47. A lei é rígida nesse ponto." }
   ],
 
   "placas": [
-    { "id": "pare",          "type": "octagon",      "symbol": "PARE", "name": "PARE",                  "category": "regulamentacao", "desc": "O condutor DEVE parar completamente o veículo antes de entrar na via. Não é permitido apenas reduzir a velocidade — é necessário parar totalmente. Infração: gravíssima." },
-    { "id": "preferencia",   "type": "triangle-inv", "symbol": "▽",    "name": "Dê a Preferência",      "category": "regulamentacao", "desc": "Ceda a passagem aos veículos que circulam na via que você vai entrar. Você deve aguardar espaço seguro antes de prosseguir." },
-    { "id": "vel-max",       "type": "circle-red",   "symbol": "60",   "name": "Velocidade Máxima",      "category": "regulamentacao", "desc": "Indica a velocidade máxima permitida naquele trecho. O número varia conforme o local." },
-    { "id": "proib-esq",     "type": "circle-red",   "symbol": "↰",    "name": "Proibido Virar Esq.",    "category": "regulamentacao", "desc": "Proibido realizar conversão à esquerda naquele ponto. Infração grave para quem descumprir." },
+    { "id": "pare",          "type": "octagon",      "symbol": "PARE", "name": "PARE",                  "category": "regulamentacao", "desc": "O condutor DEVE parar completamente o veículo antes de entrar na via. Não é permitido apenas reduzir a velocidade — é necessário parar totalmente. Infração: gravíssima — 7 pontos." },
+    { "id": "preferencia",   "type": "triangle-inv", "symbol": "▽",    "name": "Dê a Preferência",      "category": "regulamentacao", "desc": "Ceda a passagem aos veículos que circulam na via que você vai entrar. Aguarde espaço seguro antes de prosseguir." },
+    { "id": "vel-max",       "type": "circle-red",   "symbol": "60",   "name": "Velocidade Máxima",      "category": "regulamentacao", "desc": "Indica a velocidade máxima permitida naquele trecho. O número varia conforme o local. Respeitar é obrigatório." },
+    { "id": "proib-esq",     "type": "circle-red",   "symbol": "↰",    "name": "Proibido Virar à Esq.", "category": "regulamentacao", "desc": "Proibido realizar conversão à esquerda naquele ponto. Infração grave para quem descumprir." },
     { "id": "proib-retorno", "type": "circle-red",   "symbol": "↺",    "name": "Proibido Retorno",       "category": "regulamentacao", "desc": "Não é permitido realizar manobra de retorno naquele trecho. Infração grave." },
+    { "id": "sentido-proib", "type": "circle-red",   "symbol": "—",    "name": "Sentido Proibido",       "category": "regulamentacao", "desc": "Proibido entrar na via naquele sentido. Infração gravíssima — 7 pontos. Risco de colisão frontal." },
+    { "id": "vel-min",       "type": "circle-blue",  "symbol": "40",   "name": "Velocidade Mínima",      "category": "regulamentacao", "desc": "Indica a velocidade mínima que o condutor deve manter naquele trecho. Circular abaixo é infração." },
     { "id": "sentido-obrig", "type": "circle-blue",  "symbol": "→",    "name": "Sentido Obrigatório",    "category": "regulamentacao", "desc": "Indica a direção de circulação obrigatória. O condutor deve seguir o sentido indicado pela seta." },
     { "id": "rotatorio",     "type": "circle-blue",  "symbol": "↻",    "name": "Rotatória Obrigatória",  "category": "regulamentacao", "desc": "Obrigatório seguir o sentido rotacional indicado. Quem está na rotatória tem preferência sobre quem vai entrar." },
+    { "id": "proib-ultra",   "type": "circle-red",   "symbol": "⊘",    "name": "Proibido Ultrapassar",   "category": "regulamentacao", "desc": "Proibido ultrapassar qualquer tipo de veículo naquele trecho. Infração grave." },
     { "id": "perigo",        "type": "triangle-warn","symbol": "!",    "name": "Perigo Inespecífico",    "category": "advertencia",    "desc": "Risco à frente que não possui placa específica. Reduza a velocidade e aumente a atenção ao chegar na área indicada." },
     { "id": "curva-dir",     "type": "triangle-warn","symbol": "↗",   "name": "Curva à Direita",        "category": "advertencia",    "desc": "Curva perigosa adiante, à direita. Reduza a velocidade antes de entrar na curva." },
+    { "id": "curva-esq",     "type": "triangle-warn","symbol": "↖",   "name": "Curva à Esquerda",       "category": "advertencia",    "desc": "Curva perigosa adiante, à esquerda. Reduza a velocidade antes de entrar na curva." },
     { "id": "trav-ped",      "type": "triangle-warn","symbol": "🚶",   "name": "Travessia de Pedestres", "category": "advertencia",    "desc": "Há faixa de pedestres à frente. Atenção a pedestres que podem estar cruzando ou aguardando." },
     { "id": "area-escolar",  "type": "triangle-warn","symbol": "🚸",   "name": "Área Escolar",           "category": "advertencia",    "desc": "Circulação de crianças na região. Reduza a velocidade especialmente no período escolar (manhã e tarde)." },
     { "id": "animais",       "type": "triangle-warn","symbol": "🦌",   "name": "Animais na Pista",       "category": "advertencia",    "desc": "Risco de animais na pista à frente. Muito comum em estradas rurais. Reduza a velocidade especialmente à noite." },
     { "id": "lombada",       "type": "triangle-warn","symbol": "〰",   "name": "Lombada / Ondulação",    "category": "advertencia",    "desc": "Ondulação no pavimento à frente. Passe devagar para não danificar o veículo e perder o controle." },
+    { "id": "cruzamento",    "type": "triangle-warn","symbol": "✛",    "name": "Cruzamento à Frente",    "category": "advertencia",    "desc": "Avisa sobre cruzamento próximo. Reduza a velocidade e observe os veículos que podem cruzar a via." },
+    { "id": "obra",          "type": "triangle-warn","symbol": "👷",   "name": "Obras na Via",           "category": "advertencia",    "desc": "Indica obras ou trabalhos na pista à frente. Reduza a velocidade e siga as orientações do agente ou sinalização temporária." },
     { "id": "hospital",      "type": "rect-blue",    "symbol": "H",    "name": "Hospital",               "category": "indicacao",      "desc": "Indica a direção para um hospital ou unidade de saúde. Nas proximidades é proibido usar buzina desnecessariamente." },
     { "id": "estacionamento","type": "rect-blue",    "symbol": "P",    "name": "Estacionamento",         "category": "indicacao",      "desc": "Indica local permitido para estacionamento, com ou sem restrições de horário. Fundo azul com 'P' branco." },
-    { "id": "vaga-pcd",      "type": "rect-blue",    "symbol": "♿",   "name": "Vaga para PCD",          "category": "indicacao",      "desc": "Vaga reservada para pessoas com deficiência. Uso indevido: infração grave — 5 pontos + multa + remoção do veículo." }
+    { "id": "vaga-pcd",      "type": "rect-blue",    "symbol": "♿",   "name": "Vaga para PCD",          "category": "indicacao",      "desc": "Vaga reservada para pessoas com deficiência. Uso indevido: infração grave — 5 pontos + multa + remoção do veículo." },
+    { "id": "posto",         "type": "rect-blue",    "symbol": "⛽",   "name": "Posto de Abastecimento", "category": "indicacao",      "desc": "Indica posto de combustível próximo. Sinalização de serviço — fundo azul com símbolo branco." },
+    { "id": "pedestre",      "type": "rect-blue",    "symbol": "🚶",   "name": "Passagem de Pedestres",  "category": "indicacao",      "desc": "Indica a localização de faixa de travessia de pedestres. O condutor deve reduzir a velocidade e dar preferência." },
+    { "id": "semaforo",      "type": "circle-red",   "symbol": "🚦",   "name": "Semáforo Adiante",       "category": "advertencia",    "desc": "Indica que há semáforo adiante. Prepare-se para parar ou prosseguir conforme as cores indicadas." },
+    { "id": "ciclovia",      "type": "rect-blue",    "symbol": "🚴",   "name": "Ciclovias",              "category": "indicacao",      "desc": "Via ou faixa exclusiva para bicicletas. Carros devem respeitar. Estacionar sobre ciclovias é infração grave." },
+    { "id": "acostamento",   "type": "rect-blue",    "symbol": "🚗",   "name": "Acostamento",            "category": "indicacao",      "desc": "Em rodovias, espaço lateral para parar em emergências. NÃO é via de circulação normal. Use apenas em emergências." },
+    { "id": "ultra-proib-dir","type": "circle-red",   "symbol": "↗",    "name": "Proibido Ultrapassar",   "category": "regulamentacao", "desc": "Proibido ultrapassar qualquer tipo de veículo à frente. Infração grave — 5 pontos. Muito comum em curvas perigosas." },
+    { "id": "ultra-proib-esq", "type": "circle-red",   "symbol": "↖",    "name": "Proibido Ultrapassar",   "category": "regulamentacao", "desc": "Proibido ultrapassar pela esquerda. Ultrapassagem pela direita (interna) pode ser necessária." },
+    { "id": "mao-unica",     "type": "circle-blue",  "symbol": "→",    "name": "Mão Única",              "category": "regulamentacao", "desc": "Via de circulação em sentido único, indicado pela seta. Dirigir no sentido oposto é gravíssimo e causa colisão frontal." },
+    { "id": "entrada-proib", "type": "circle-red",   "symbol": "E",    "name": "Entrada Proibida",       "category": "regulamentacao", "desc": "Proibido entrar naquela via nesse sentido. Geralmente em ruas contramão. Dirigir contra é gravíssimo." },
+    { "id": "estac-esp",     "type": "rect-yellow",  "symbol": "E",    "name": "Estacionamento Especial","category": "indicacao",      "desc": "Estacionamento com restrições de horário, pode ser permitido apenas 2 horas, ou apenas residentes. Leia a placa abaixo." },
+    { "id": "area-azul",     "type": "rect-blue",    "symbol": "A",    "name": "Área Azul",              "category": "indicacao",      "desc": "Estacionamento regulado em zona urbana. Requer disco de estacionamento (tempo máximo, geralmente 2h). Informações específicas no local." },
+    { "id": "pedrest-obl",   "type": "circle-blue",  "symbol": "🚶",   "name": "Passagem Obrigatória",   "category": "regulamentacao", "desc": "Obrigatório passar por esta faixa de pedestres ou passarela. Não pode contornar." },
+    { "id": "estacao-trem",  "type": "rect-blue",    "symbol": "🚂",   "name": "Estação Ferroviária",    "category": "indicacao",      "desc": "Indica localização de estação ferroviária próxima. Cuidado com circulação ferroviária." },
+    { "id": "passagem-nivel","type": "triangle-warn", "symbol": "X",    "name": "Passagem de Nível",      "category": "advertencia",    "desc": "Avisa sobre passagem de nível (cruzamento com ferrovia) à frente. Reduza a velocidade e mantenha máxima atenção." }
   ],
 
   "infracoes": [
-    { "infraction": "Avançar sinal vermelho",                     "nature": "Gravíssima",    "points": 7, "fine": "293,47",   "measures": "Retenção do veículo" },
-    { "infraction": "Dirigir sob efeito de álcool (administrativo)", "nature": "Gravíssima ×5","points": 7, "fine": "2.934,70","measures": "Suspensão 12m + retenção" },
-    { "infraction": "Excesso de velocidade acima de 50%",         "nature": "Gravíssima ×3", "points": 7, "fine": "880,41",   "measures": "Retenção do veículo" },
-    { "infraction": "Ultrapassar linha contínua amarela",          "nature": "Grave",         "points": 5, "fine": "195,23",   "measures": "—" },
-    { "infraction": "Não usar cinto de segurança",                 "nature": "Grave",         "points": 5, "fine": "195,23",   "measures": "—" },
-    { "infraction": "Usar celular ao volante",                     "nature": "Grave",         "points": 5, "fine": "195,23",   "measures": "—" },
-    { "infraction": "Estacionar em local proibido",                "nature": "Média",         "points": 4, "fine": "130,16",   "measures": "Remoção do veículo" },
-    { "infraction": "Parar sobre a faixa de pedestres",            "nature": "Grave",         "points": 5, "fine": "195,23",   "measures": "—" },
-    { "infraction": "Não sinalizar manobra (pisca)",               "nature": "Leve",          "points": 3, "fine": "88,38",    "measures": "—" },
-    { "infraction": "Transitar sem CNH",                           "nature": "Gravíssima",    "points": 7, "fine": "293,47",   "measures": "Retenção do veículo" },
-    { "infraction": "Excesso de velocidade 20% a 50%",             "nature": "Gravíssima",    "points": 7, "fine": "293,47",   "measures": "—" },
-    { "infraction": "Não dar preferência ao pedestre na faixa",    "nature": "Grave",         "points": 5, "fine": "195,23",   "measures": "—" },
-    { "infraction": "Dirigir com farol apagado à noite",           "nature": "Grave",         "points": 5, "fine": "195,23",   "measures": "—" },
-    { "infraction": "Conduzir criança sem cadeirinha",             "nature": "Gravíssima",    "points": 7, "fine": "293,47",   "measures": "Retenção do veículo" }
+    { "infraction": "Avançar sinal vermelho",                       "nature": "Gravíssima",    "points": 7, "fine": "293,47",   "measures": "Retenção do veículo" },
+    { "infraction": "Dirigir sob efeito de álcool (administrativo)","nature": "Gravíssima ×10","points": 7, "fine": "2.934,70","measures": "Suspensão 12m + retenção" },
+    { "infraction": "Disputar racha / corrida ilegal",              "nature": "Gravíssima ×5", "points": 7, "fine": "1.467,35","measures": "Susp. 12m + apreensão + crime" },
+    { "infraction": "Excesso de velocidade acima de 50%",           "nature": "Gravíssima ×3", "points": 7, "fine": "880,41",   "measures": "Retenção do veículo" },
+    { "infraction": "Excesso de velocidade de 20% a 50%",          "nature": "Gravíssima",    "points": 7, "fine": "293,47",   "measures": "—" },
+    { "infraction": "Não usar cinto de segurança",                  "nature": "Grave",         "points": 5, "fine": "195,23",   "measures": "Por passageiro sem cinto" },
+    { "infraction": "Usar celular ao volante",                      "nature": "Grave",         "points": 5, "fine": "293,47",   "measures": "—" },
+    { "infraction": "Ultrapassar linha contínua amarela",           "nature": "Grave",         "points": 5, "fine": "195,23",   "measures": "—" },
+    { "infraction": "Parar sobre a faixa de pedestres",             "nature": "Grave",         "points": 5, "fine": "195,23",   "measures": "—" },
+    { "infraction": "Não dar preferência ao pedestre na faixa",     "nature": "Grave",         "points": 5, "fine": "195,23",   "measures": "—" },
+    { "infraction": "Dirigir com farol apagado à noite",            "nature": "Grave",         "points": 5, "fine": "195,23",   "measures": "—" },
+    { "infraction": "Conduzir criança sem cadeirinha/dispositivo",  "nature": "Gravíssima",    "points": 7, "fine": "293,47",   "measures": "Retenção do veículo" },
+    { "infraction": "Transitar sem CNH",                            "nature": "Gravíssima",    "points": 7, "fine": "293,47",   "measures": "Retenção do veículo" },
+    { "infraction": "Estacionar em vaga de PCD sem autorização",    "nature": "Grave",         "points": 5, "fine": "195,23",   "measures": "Remoção do veículo" },
+    { "infraction": "Estacionar em local proibido",                 "nature": "Média",         "points": 4, "fine": "130,16",   "measures": "Remoção do veículo" },
+    { "infraction": "Não sinalizar manobra (pisca-pisca)",          "nature": "Leve",          "points": 3, "fine": "88,38",    "measures": "—" },
+    { "infraction": "Jogar objetos ou lixo na via pública",         "nature": "Grave",         "points": 5, "fine": "195,23",   "measures": "—" },
+    { "infraction": "Excesso de velocidade até 20% do limite",      "nature": "Grave",         "points": 5, "fine": "195,23",   "measures": "—" },
+    { "infraction": "Avançar sinal semafórico amarelo",             "nature": "Grave",         "points": 5, "fine": "195,23",   "measures": "—" },
+    { "infraction": "Obstruir saída de garagem",                    "nature": "Média",         "points": 4, "fine": "130,16",   "measures": "Remoção do veículo" },
+    { "infraction": "Transitar em via contramão (mão única)",        "nature": "Gravíssima",    "points": 7, "fine": "293,47",   "measures": "Remoção do veículo" },
+    { "infraction": "Não manter documento do veículo à mão",         "nature": "Média",         "points": 4, "fine": "130,16",   "measures": "—" },
+    { "infraction": "Buzinar desnecessariamente ou à noite",         "nature": "Leve",          "points": 3, "fine": "88,38",    "measures": "—" },
+    { "infraction": "Alterar placa ou identificação do veículo",     "nature": "Gravíssima",    "points": 7, "fine": "293,47",   "measures": "Retenção + crime" },
+    { "infraction": "Deixar criança sozinha no veículo",             "nature": "Grave",         "points": 5, "fine": "195,23",   "measures": "Retenção + CONSELHO TUTELAR" },
+    { "infraction": "Recusa em fazer o teste do bafômetro",          "nature": "Gravíssima ×10","points": 7, "fine": "2.934,70","measures": "Suspensão 12m + retenção + crime" },
+    { "infraction": "Dirigir com a CNH suspensa ou cassada",         "nature": "Gravíssima",    "points": 7, "fine": "293,47",   "measures": "Retenção + crime de trânsito" },
+    { "infraction": "Excesso de velocidade em zona de risco agravado","nature": "Gravíssima ×5", "points": 7, "fine": "1.467,35","measures": "Retenção + suspensão" }
   ],
 
   "direcaoSegura": [
@@ -502,7 +803,7 @@
         { "icon": "⚗️", "title": "Efeitos do álcool", "body": "Mesmo pequenas quantidades afetam:\n• Visão periférica reduzida\n• Tempo de reação aumentado até 300%\n• Autoconfiança exagerada (subestima riscos)\n• Coordenação motora prejudicada" }
       ],
       "highlights": [
-        { "type": "warn", "text": "<strong>Lei Seca:</strong> Tolerância ZERO para álcool. Qualquer detecção resulta em multa de R$2.934,70 + suspensão de 12 meses. A partir de 0,6 g/L no sangue: crime de trânsito." }
+        { "type": "warn", "text": "<strong>Lei Seca:</strong> Tolerância ZERO. Qualquer detecção resulta em multa de R$2.934,70 + suspensão de 12 meses. A partir de 0,6 g/L no sangue: crime de trânsito." }
       ]
     },
     {
@@ -542,6 +843,18 @@
       ],
       "highlights": [
         { "type": "warn", "text": "<strong>NUNCA mova a vítima sem necessidade</strong> — pode agravar lesões na coluna. Abandonar vítima de acidente é CRIME previsto no CTB e no Código Penal." }
+      ]
+    },
+    {
+      "id": "normas-circ", "icon": "🛣️", "title": "Normas de Circulação",
+      "shortDesc": "Preferência de passagem, uso de faixas, conversões, estacionamento e regras gerais do CTB.",
+      "concepts": [
+        { "icon": "→", "title": "Manter-se à direita", "body": "Em vias com múltiplas faixas, mantenha-se na faixa da direita. Faixas da esquerda são para ultrapassagem." },
+        { "icon": "🔄", "title": "Rotatória", "body": "Quem está na rotatória tem preferência. Ao sair, use o pisca-pisca para sinalizar." },
+        { "icon": "💡", "title": "Uso dos faróis", "body": "Farol baixo: noite, túneis, neblina. Farol alto: rodovias sem iluminação (NUNCA com veículo à frente). Rodovias de dia: farol baixo obrigatório." }
+      ],
+      "highlights": [
+        { "type": "info", "text": "<strong>Velocidades máximas:</strong><br>Rodovia pista dupla: 110 km/h | Pista simples: 100 km/h | Via rápida: 80 km/h | Arterial: 60 km/h | Coletora: 40 km/h | Local: 30 km/h" }
       ]
     }
   ]

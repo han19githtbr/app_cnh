@@ -802,3 +802,119 @@ main { max-width: 1400px; margin: 0 auto; padding: 2rem; }
 @media (max-width: 768px) {
   .ts-time-badge, .ts-weather-badge { font-size: .72rem; padding: .3rem .6rem; }
 }
+
+/* ── SIMULADOR v2 melhorias ─────────────────────── */
+.ts-stat.purple .ts-stat-val { color: #a78bfa; }
+.ts-stats-grid { grid-template-columns: 1fr 1fr 1fr; }
+
+/* Click hint */
+.ts-click-hint {
+  position: absolute;
+  bottom: .75rem;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(10,14,26,.82);
+  border: 1px solid rgba(255,255,255,.08);
+  border-radius: 8px;
+  padding: .3rem .75rem;
+  font-size: .7rem;
+  color: var(--muted);
+  backdrop-filter: blur(8px);
+  pointer-events: none;
+  white-space: nowrap;
+  animation: tsHintPulse 3s ease-in-out infinite;
+}
+@keyframes tsHintPulse {
+  0%,100% { opacity:.6; }
+  50% { opacity:1; }
+}
+
+/* Enhanced event log */
+.ts-ev-item {
+  cursor: default;
+  transition: background .12s;
+}
+.ts-ev-item:hover { background: var(--surface); }
+
+/* Stats animation on update */
+.ts-stat-val { transition: color .3s; }
+
+/* Stronger panel label */
+.ts-panel-label {
+  font-family: 'DM Mono', monospace;
+}
+
+/* Chaos mode button pulse */
+.sim-ctrl-danger.sim-ctrl-active {
+  animation: chaosPulse 1s ease-in-out infinite;
+}
+@keyframes chaosPulse {
+  0%,100% { box-shadow: 0 0 0 0 rgba(239,68,68,.4); }
+  50% { box-shadow: 0 0 0 6px rgba(239,68,68,0); }
+}
+
+/* Better canvas cursor transition */
+#ts-canvas { transition: cursor .1s; }
+
+/* CTB tip styling */
+#ts-ctb-tip {
+  font-size: .74rem;
+  line-height: 1.7;
+  color: var(--muted);
+  padding: .2rem 0;
+}
+#ts-ctb-tip b { color: var(--text); }
+
+/* Responsive stats */
+@media (max-width: 900px) {
+  .ts-stats-grid { grid-template-columns: 1fr 1fr; }
+}
+
+/* ── Simulador v3 ── */
+/* Stats grid 3 colunas com 6 itens */
+.ts-stats-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: .4rem;
+}
+.ts-stat.orange .ts-stat-val { color: #fb923c; }
+
+/* CTB tip panel mais rico */
+#ts-ctb-tip {
+  font-size: .73rem;
+  line-height: 1.7;
+  color: var(--muted);
+}
+#ts-ctb-tip b { color: var(--text); }
+
+/* Chaos pulse */
+.sim-ctrl-danger.sim-ctrl-active {
+  animation: chaosPulse 1s ease-in-out infinite;
+}
+@keyframes chaosPulse {
+  0%,100% { box-shadow: 0 0 0 0 rgba(239,68,68,.4); }
+  50%      { box-shadow: 0 0 0 6px rgba(239,68,68,0); }
+}
+
+/* Click hint */
+.ts-click-hint {
+  position: absolute;
+  bottom: .75rem; left: 50%;
+  transform: translateX(-50%);
+  background: rgba(10,14,26,.82);
+  border: 1px solid rgba(255,255,255,.08);
+  border-radius: 8px; padding: .3rem .75rem;
+  font-size: .7rem; color: var(--muted);
+  backdrop-filter: blur(8px);
+  pointer-events: none; white-space: nowrap;
+  animation: tsHintPulse 3s ease-in-out infinite;
+}
+@keyframes tsHintPulse { 0%,100%{opacity:.5} 50%{opacity:1} }
+
+/* Notif multiline */
+.ts-notif { white-space: pre-line; }
+
+/* Responsive */
+@media (max-width: 900px) {
+  .ts-stats-grid { grid-template-columns: 1fr 1fr; }
+}

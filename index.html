@@ -186,6 +186,7 @@
       <div class="ts-canvas-wrap">
         <canvas id="ts-canvas"></canvas>
         <div class="ts-time-badge" id="ts-time-badge">🕐 08:00</div>
+        <div class="ts-click-hint" id="ts-click-hint">🖱️ Clique em um veículo para ver detalhes</div>
         <div class="ts-weather-badge" id="ts-weather-badge">☀️ Ensolarado · 28°C</div>
       </div>
 
@@ -200,6 +201,8 @@
             <div class="ts-stat green"><div class="ts-stat-val" id="ts-s-pedestrians">0</div><div class="ts-stat-lbl">Pedestres</div></div>
             <div class="ts-stat red"><div class="ts-stat-val" id="ts-s-violations">0</div><div class="ts-stat-lbl">Infrações</div></div>
             <div class="ts-stat yellow"><div class="ts-stat-val" id="ts-s-accidents">0</div><div class="ts-stat-lbl">Acidentes</div></div>
+            <div class="ts-stat purple"><div class="ts-stat-val" id="ts-s-rate">0%</div><div class="ts-stat-lbl">% Infratores</div></div>
+            <div class="ts-stat orange"><div class="ts-stat-val" id="ts-s-fines">R$0</div><div class="ts-stat-lbl">Total Multas</div></div>
           </div>
         </div>
 
@@ -245,6 +248,7 @@
               <button class="ts-sm-btn" onclick="tsForceEvent('ped')">🚶 Ped. Imprudente</button>
               <button class="ts-sm-btn" onclick="tsForceEvent('park')">🅿 Estac. Proibido</button>
               <button class="ts-sm-btn" onclick="tsForceEvent('drunk')">🍺 Embriagado</button>
+              <button class="ts-sm-btn" onclick="tsForceEvent('wrong_way')">↩ Contramão</button>
             </div>
           </div>
         </div>
@@ -257,19 +261,22 @@
             <div class="ts-leg-row"><span class="ts-leg-dot" style="background:#ef4444"></span>Veículo infrator</div>
             <div class="ts-leg-row"><span class="ts-leg-dot" style="background:#f59e0b"></span>Motocicleta</div>
             <div class="ts-leg-row"><span class="ts-leg-dot" style="background:#8b5cf6"></span>Ônibus / Caminhão</div>
+            <div class="ts-leg-row"><span class="ts-leg-dot" style="background:#f8fafc"></span>Ambulância (SAMU)</div>
             <div class="ts-leg-row"><span class="ts-leg-dot" style="background:#22c55e"></span>Pedestre seguro</div>
             <div class="ts-leg-row"><span class="ts-leg-dot" style="background:#f97316"></span>Pedestre imprudente</div>
             <div class="ts-leg-row"><span class="ts-leg-rect" style="background:repeating-linear-gradient(90deg,#fbbf24 0,#fbbf24 8px,transparent 8px,transparent 16px)"></span>Faixa de pedestre</div>
+            <div class="ts-leg-row"><span class="ts-leg-rect" style="background:rgba(251,191,36,.2);border:1px solid #fbbf24"></span>Zona escolar 30km/h</div>
+            <div class="ts-leg-row"><span class="ts-leg-dot" style="background:#fbbf24;border-radius:2px"></span>Lombada / redutor</div>
             <div class="ts-leg-row"><span class="ts-leg-rect" style="background:#ef444466"></span>Estacionamento proibido</div>
             <div class="ts-leg-row"><span class="ts-leg-rect" style="background:#a8ff3e55"></span>Zona de carga e descarga</div>
           </div>
         </div>
 
-        <!-- CTB Tip -->
+        <!-- CTB Detalhe -->
         <div class="ts-panel-section">
-          <div class="ts-panel-label">📖 Dica CTB</div>
+          <div class="ts-panel-label">📖 Artigo CTB Aplicado</div>
           <div id="ts-ctb-tip" style="font-size:.74rem;line-height:1.65;color:var(--muted)">
-            Aguardando infração para exibir o artigo do CTB aplicável...
+            Aguardando infração para exibir o artigo do CTB, multa e penalidades reais...
           </div>
         </div>
 
