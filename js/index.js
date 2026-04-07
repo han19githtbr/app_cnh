@@ -470,8 +470,27 @@ function showSignDetail(id) {
   const placa  = DB.placas.find(p => p.id === id);
   if (!placa) return;
   const detail = document.getElementById('placa-detail');
-  document.getElementById('pd-title').textContent = placa.name;
-  document.getElementById('pd-body').textContent  = placa.desc;
+  const translations = DB.translations?.[id] || {};
+  const pt = translations.pt || { name: placa.name, desc: placa.desc };
+  const en = translations.en || { name: placa.name, desc: placa.desc };
+  const es = translations.es || { name: placa.name, desc: placa.desc };
+
+  document.getElementById('pd-title').textContent = pt.name || placa.name;
+  document.getElementById('pd-body').innerHTML = `
+    <div class="lang-blocks">
+      <div class="lang-card">
+        <div class="lang-label">Português</div>
+        <div>${pt.desc}</div>
+      </div>
+      <div class="lang-card">
+        <div class="lang-label">English</div>
+        <div>${en.desc}</div>
+      </div>
+      <div class="lang-card">
+        <div class="lang-label">Español</div>
+        <div>${es.desc}</div>
+      </div>
+    </div>`;
   detail.style.display = 'block';
   detail.scrollIntoView({ behavior: 'smooth' });
 }

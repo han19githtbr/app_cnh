@@ -224,6 +224,29 @@ main { max-width: 1400px; margin: 0 auto; padding: 2rem; }
 }
 .concept-body { font-size:.85rem; color:#b0bfd8; line-height:1.8; }
 
+.lang-blocks {
+  display:grid;
+  gap:1rem;
+  grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
+  margin-top:1rem;
+}
+.lang-card {
+  background:rgba(255,255,255,.04);
+  border:1px solid var(--border);
+  border-radius:12px;
+  padding:1rem;
+}
+.lang-label {
+  font-family:'DM Mono',monospace;
+  font-size:.75rem;
+  letter-spacing:.08em;
+  text-transform:uppercase;
+  color:var(--muted);
+  margin-bottom:.75rem;
+  display:block;
+}
+.lang-card div { line-height:1.7; color:#c8d5e8; }
+
 /* ── HIGHLIGHT BOXES ─────────────────────────── */
 .highlight-box {
   border-left:3px solid var(--accent);
