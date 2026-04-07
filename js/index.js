@@ -8,6 +8,79 @@ let currentModuleId = null;
 let currentLessonIdx = 0;
 let quizStates = {};
 let simState = {};
+const STORAGE_KEY = 'cnhBrasilProgress';
+let APP_PROGRESS = { lastModule: null, quizzes: {}, simulado: null };
+
+function loadUserProgress() {
+  try {
+    const stored = JSON.parse(localStorage.getItem(STORAGE_KEY));
+    if (stored && typeof stored === 'object') APP_PROGRESS = stored;
+  } catch (e) {
+    console.warn('Não foi possível carregar o progresso salvo:', e);
+  }
+}
+
+function saveUserProgress() {
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(APP_PROGRESS));
+  } catch (e) {
+    console.warn('Não foi possível salvar o progresso:', e);
+  }
+}
+
+function saveLastModulePosition() {
+  if (!currentModuleId && currentModuleId !== 0) return;
+  APP_PROGRESS.lastModule = { id: currentModuleId, lessonIdx: currentLessonIdx };
+  saveUserProgress();
+}
+
+function getSavedLessonIndex(moduleId) {
+  return APP_PROGRESS.lastModule?.id === moduleId ? APP_PROGRESS.lastModule.lessonIdx : 0;
+}
+
+function persistQuizState(id) {
+  const state = quizStates[id];
+  if (!state) return;
+  APP_PROGRESS.quizzes[id] = {
+    current: state.current,
+    score: state.score
+  };
+  saveUserProgress();
+}
+
+function clearQuizProgress(id) {
+  if (APP_PROGRESS.quizzes[id]) {
+    delete APP_PROGRESS.quizzes[id];
+    saveUserProgress();
+  }
+}
+
+function persistSimState() {
+  if (!simState || simState.timeLeft == null) return;
+  APP_PROGRESS.simulado = {
+    active: true,
+    current: simState.current,
+    score: simState.score,
+    timeLeft: simState.timeLeft,
+    answered: simState.answered
+  };
+  saveUserProgress();
+}
+
+function clearSimProgress() {
+  APP_PROGRESS.simulado = null;
+  saveUserProgress();
+}
+
+function updateSimStartButton() {
+  const btn = document.getElementById('btn-start-sim');
+  if (!btn) return;
+  if (APP_PROGRESS.simulado?.active && APP_PROGRESS.simulado.timeLeft > 0 && APP_PROGRESS.simulado.current < (DB?.simulado?.length || 0)) {
+    btn.textContent = '▶ Continuar Simulado';
+  } else {
+    btn.textContent = '▶ Iniciar Simulado';
+  }
+}
 
 // ─────────────────────────────────────────────────────
 // BOOT — carrega data.json antes de tudo
@@ -17,10 +90,12 @@ async function boot() {
     const res = await fetch('database/data.json');
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     DB = await res.json();
+    loadUserProgress();
     renderModulesHome();
     renderPlacasGrid('todas');
     renderInfracoes();
     renderDirecaoCards();
+    updateSimStartButton();
   } catch (e) {
     document.body.innerHTML = `
       <div style="color:#ef4444;padding:3rem;font-family:monospace;background:#0a0e1a;min-height:100vh">
@@ -84,7 +159,8 @@ function backToModules() {
 // ─────────────────────────────────────────────────────
 function openModule(id) {
   currentModuleId  = id;
-  currentLessonIdx = 0;
+  currentLessonIdx = getSavedLessonIndex(id) || 0;
+  saveLastModulePosition();
   document.getElementById('modules-home').style.display = 'none';
   document.getElementById('module-content-area').style.display = 'block';
   renderLesson();
@@ -94,6 +170,7 @@ function goToLesson(idx) {
   const mod = DB.modules.find(m => m.id === currentModuleId);
   if (!mod || idx < 0 || idx >= mod.lessons.length) return;
   currentLessonIdx = idx;
+  saveLastModulePosition();
   renderLesson();
   document.querySelector('.lesson-area')?.scrollIntoView({ behavior: 'smooth' });
 }
@@ -248,7 +325,10 @@ function buildQuizHTML(lesson) {
 
 function initQuiz(id, questions) {
   if (!questions || !questions.length) return;
-  quizStates[id] = { questions, current: 0, score: 0, answered: false };
+  const saved = APP_PROGRESS.quizzes[id];
+  const current = saved?.current != null ? Math.min(saved.current, questions.length) : 0;
+  const score = saved?.score != null ? saved.score : 0;
+  quizStates[id] = { questions, current, score, answered: false };
   renderQuizQuestion(id);
 }
 
@@ -258,6 +338,7 @@ function renderQuizQuestion(id) {
   if (!el || !state) return;
 
   if (state.current >= state.questions.length) {
+    persistQuizState(id);
     const pct = Math.round(state.score / state.questions.length * 100);
     el.innerHTML = `
       <div class="quiz-score show">
@@ -297,6 +378,8 @@ function answerQuiz(id, idx) {
   if (idx !== q.correct) opts[idx].classList.add('wrong');
   else state.score++;
 
+  persistQuizState(id);
+
   const fb = document.getElementById('qfb-' + id);
   fb.className = 'quiz-feedback show ' + (idx === q.correct ? 'ok' : 'err');
   fb.textContent = q.exp;
@@ -305,11 +388,13 @@ function answerQuiz(id, idx) {
 
 function nextQuiz(id) {
   quizStates[id].current++;
+  persistQuizState(id);
   renderQuizQuestion(id);
 }
 
 function restartQuiz(id) {
   quizStates[id] = { ...quizStates[id], current: 0, score: 0, answered: false };
+  clearQuizProgress(id);
   renderQuizQuestion(id);
 }
 
@@ -317,16 +402,42 @@ function restartQuiz(id) {
 // SIMULADO
 // ─────────────────────────────────────────────────────
 function startSimulado() {
-  simState = {
-    current: 0, score: 0, answered: false,
-    timeLeft: (DB.meta.simuladoMinutes || 45) * 60,
-    timer: null
+  const saved = APP_PROGRESS.simulado;
+  const total = DB.simulado.length;
+  if (saved?.active && saved.timeLeft > 0 && saved.current < total) {
+    simState = {
+      current: saved.current,
+      score: saved.score,
+      answered: saved.answered,
+      timeLeft: saved.timeLeft,
+      timer: null
+    };
+  } else {
+    simState = {
+      current: 0,
+      score: 0,
+      answered: false,
+      timeLeft: (DB.meta.simuladoMinutes || 45) * 60,
+      timer: null
+    };
+    clearSimProgress();
+  }
+
+  APP_PROGRESS.simulado = {
+    active: true,
+    current: simState.current,
+    score: simState.score,
+    timeLeft: simState.timeLeft,
+    answered: simState.answered
   };
+  saveUserProgress();
+
   document.getElementById('sim-start-screen').style.display = 'none';
   document.getElementById('sim-quiz-area').style.display = 'block';
   renderSimQuestion();
   simState.timer = setInterval(() => {
     simState.timeLeft--;
+    if (simState.timeLeft < 0) simState.timeLeft = 0;
     const el = document.getElementById('sim-timer-disp');
     if (el) {
       const m = Math.floor(simState.timeLeft / 60);
@@ -334,6 +445,7 @@ function startSimulado() {
       el.textContent = `${m}:${s.toString().padStart(2, '0')}`;
     }
     if (simState.timeLeft <= 0) endSimulado();
+    if (simState.timeLeft % 5 === 0) persistSimState();
   }, 1000);
 }
 
@@ -384,6 +496,8 @@ function answerSim(idx) {
   if (idx !== q.correct) opts[idx].classList.add('wrong');
   else simState.score++;
 
+  persistSimState();
+
   const ok = idx === q.correct;
   const fb = document.getElementById('sim-feedback');
   fb.style.cssText = `display:block;
@@ -396,6 +510,7 @@ function answerSim(idx) {
 
 function nextSim() {
   simState.current++;
+  persistSimState();
   renderSimQuestion();
 }
 
@@ -404,6 +519,9 @@ function endSimulado() {
   const total    = DB.simulado.length;
   const pct      = Math.round(simState.score / total * 100);
   const approved = pct >= (DB.meta.passingScore || 70);
+
+  clearSimProgress();
+  updateSimStartButton();
 
   document.getElementById('sim-quiz-area').style.display = 'none';
   const result = document.getElementById('sim-result-area');
@@ -427,6 +545,9 @@ function endSimulado() {
 }
 
 function restartSim() {
+  clearInterval(simState.timer);
+  clearSimProgress();
+  updateSimStartButton();
   document.getElementById('sim-result-area').style.display = 'none';
   document.getElementById('sim-start-screen').style.display = 'block';
 }
