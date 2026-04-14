@@ -28,6 +28,7 @@
       <button class="tab-btn visual-tab-btn" onclick="showTab('visual', this)">🖼️ Visual</button>
       <button class="tab-btn sim-tab-btn" onclick="showTab('transito', this)">🎮 Simulador</button>
     </div>
+    <!-- Lang selector injected by i18n.js -->
     <button class="hamburger" id="hamburger-btn" onclick="toggleMobileNav()" aria-label="Menu">
       <span></span><span></span><span></span>
     </button>
@@ -117,10 +118,10 @@
     <div class="section-title">🛑 Guia Completo de Placas</div>
     <div class="section-sub">Clique em qualquer placa para ver detalhes e exemplos</div>
     <div style="display:flex;gap:.5rem;margin-bottom:1.5rem;flex-wrap:wrap">
-      <button class="scenario-btn active" onclick="filterPlacas('todas', this)">Todas</button>
-      <button class="scenario-btn" onclick="filterPlacas('regulamentacao', this)">Regulamentação</button>
-      <button class="scenario-btn" onclick="filterPlacas('advertencia', this)">Advertência</button>
-      <button class="scenario-btn" onclick="filterPlacas('indicacao', this)">Indicação</button>
+      <button class="scenario-btn placas-filter-btn active" data-filter="todas" onclick="filterPlacas('todas', this)">Todas</button>
+      <button class="scenario-btn placas-filter-btn" data-filter="regulamentacao" onclick="filterPlacas('regulamentacao', this)">Regulamentação</button>
+      <button class="scenario-btn placas-filter-btn" data-filter="advertencia" onclick="filterPlacas('advertencia', this)">Advertência</button>
+      <button class="scenario-btn placas-filter-btn" data-filter="indicacao" onclick="filterPlacas('indicacao', this)">Indicação</button>
     </div>
     <div id="placas-grid" class="signs-grid"></div>
     <div id="placa-detail" style="display:none;margin-top:1.5rem">
@@ -187,7 +188,6 @@
           <option value="3">🚀 3×</option>
         </select>
         <button class="sim-ctrl-btn" onclick="tsToggleAudio()" id="btn-sound">🔊 Som</button>
-        <!--<button class="sim-ctrl-btn" onclick="tsToggleVoice()" id="btn-voice">🗣️ Voz</button>-->
         <div class="ts-toolbar-group">
           <label class="ts-toolbar-label" for="ts-map-mode-sel">Mapa</label>
           <select class="sim-ctrl-select" onchange="tsSetMapMode(this.value)" id="ts-map-mode-sel">
@@ -320,6 +320,8 @@
 
 </main>
 
+<!-- Load i18n FIRST (defines TTS, t(), setLanguage()) -->
+<script src="js/i18n.js"></script>
 <script src="js/index.js"></script>
 <script src="js/visual-scenes.js"></script>
 <script>
@@ -353,13 +355,42 @@
     if (id === 'transito') tsInitIfNeeded();
     // Init visual module when tab opens
     if (id === 'visual') renderVisualModule();
+
+    // Load TTS for current section
+    setTimeout(() => loadTTSForActiveSection(id), 300);
   };
+
+  // ── TTS integration with sections ──────────────────
+  function loadTTSForActiveSection(sectionId) {
+    const el = document.getElementById('sec-' + sectionId);
+    if (!el || typeof TTS === 'undefined') return;
+    const secs = TTS.buildSectionsFromElement(el);
+    TTS.load(secs);
+  }
+
+  // Hook into renderLesson to auto-load TTS
+  const _origRenderLesson = typeof renderLesson === 'function' ? renderLesson : null;
+  if (typeof window !== 'undefined') {
+    window._ttsLessonHook = function() {
+      setTimeout(() => {
+        const el = document.getElementById('module-content-inner');
+        if (!el || typeof TTS === 'undefined') return;
+        const secs = TTS.buildSectionsFromElement(el);
+        TTS.load(secs);
+      }, 400);
+    };
+  }
 
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
       navigator.serviceWorker.register('sw.js').catch(() => {});
     });
   }
+
+  // Load TTS on initial section
+  window.addEventListener('load', () => {
+    setTimeout(() => loadTTSForActiveSection('modulos'), 800);
+  });
 </script>
 </body>
 </html>

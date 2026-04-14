@@ -960,3 +960,443 @@ main { max-width: 1400px; margin: 0 auto; padding: 2rem; }
 @media (max-width: 900px) {
   .ts-stats-grid { grid-template-columns: 1fr 1fr; }
 }
+
+/* ══════════════════════════════════════════════════════
+   LANGUAGE SELECTOR
+   ══════════════════════════════════════════════════════ */
+.lang-selector {
+  display: flex;
+  align-items: center;
+  gap: .4rem;
+  flex-shrink: 0;
+}
+.lang-label {
+  font-size: .9rem;
+  color: var(--muted);
+}
+#lang-select {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  color: var(--text);
+  font-family: 'DM Mono', monospace;
+  font-size: .72rem;
+  padding: .28rem .5rem;
+  cursor: pointer;
+  outline: none;
+  transition: border-color .2s;
+}
+#lang-select:hover,
+#lang-select:focus {
+  border-color: var(--accent);
+}
+
+/* ══════════════════════════════════════════════════════
+   TTS PLAYER — Floating bar at bottom (v2)
+   ══════════════════════════════════════════════════════ */
+.tts-player {
+  position: fixed;
+  bottom: 0; left: 0; right: 0;
+  z-index: 200;
+  background: rgba(10, 14, 26, 0.97);
+  backdrop-filter: blur(20px);
+  border-top: 1px solid var(--border);
+  padding: .45rem 1.2rem .5rem;
+  display: flex;
+  flex-direction: column;
+  gap: .3rem;
+  box-shadow: 0 -4px 28px rgba(0,0,0,.5);
+}
+
+/* Linha superior: título + contadores + status */
+.tts-top-row {
+  display: flex;
+  align-items: center;
+  gap: .7rem;
+  flex-wrap: wrap;
+}
+.tts-player-title {
+  font-family: 'DM Mono', monospace;
+  font-size: .72rem;
+  color: var(--accent);
+  font-weight: 700;
+  white-space: nowrap;
+  letter-spacing: .03em;
+}
+.tts-position {
+  display: flex;
+  align-items: center;
+  gap: .3rem;
+}
+.tts-pos-label {
+  font-family: 'DM Mono', monospace;
+  font-size: .65rem;
+  color: var(--muted);
+}
+.tts-pos-val {
+  font-family: 'DM Mono', monospace;
+  font-size: .68rem;
+  color: var(--text);
+  margin-right: .35rem;
+}
+.tts-sec-name {
+  font-family: 'DM Sans', sans-serif;
+  font-size: .68rem;
+  color: var(--muted);
+  font-style: italic;
+  max-width: 220px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.tts-status {
+  font-family: 'DM Mono', monospace;
+  font-size: .67rem;
+  color: var(--accent3);
+  margin-left: auto;
+}
+
+/* Linha de controles */
+.tts-controls-row {
+  display: flex;
+  align-items: center;
+  gap: .35rem;
+  flex-wrap: wrap;
+}
+
+/* Grupos de botões com label */
+.tts-group {
+  display: flex;
+  align-items: center;
+  gap: .28rem;
+  position: relative;
+}
+.tts-group-label {
+  font-family: 'DM Mono', monospace;
+  font-size: .58rem;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: .06em;
+  white-space: nowrap;
+}
+.tts-divider {
+  width: 1px;
+  height: 22px;
+  background: var(--border);
+  margin: 0 .1rem;
+  flex-shrink: 0;
+}
+
+/* Botão base */
+.tts-ctrl-btn {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  color: var(--text);
+  font-family: 'DM Sans', sans-serif;
+  font-size: .73rem;
+  font-weight: 500;
+  padding: .3rem .6rem;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all .15s;
+  display: inline-flex;
+  align-items: center;
+  gap: .2rem;
+  white-space: nowrap;
+  line-height: 1.3;
+}
+.tts-ctrl-btn:hover {
+  background: var(--surface);
+  border-color: rgba(245,197,24,.4);
+  color: var(--accent);
+}
+.tts-ctrl-btn:active {
+  transform: scale(.96);
+}
+
+/* Botões de modo de play */
+.tts-btn-mode {
+  background: rgba(245,197,24,.06);
+  border-color: rgba(245,197,24,.2);
+  color: #c9a800;
+}
+.tts-btn-mode:hover {
+  background: rgba(245,197,24,.14);
+  border-color: rgba(245,197,24,.5);
+  color: var(--accent);
+}
+.tts-btn-sec {
+  background: rgba(59,130,246,.07);
+  border-color: rgba(59,130,246,.25);
+  color: #60a5fa;
+}
+.tts-btn-sec:hover {
+  background: rgba(59,130,246,.16);
+  border-color: rgba(59,130,246,.5);
+  color: #93c5fd;
+}
+.tts-btn-all {
+  background: rgba(16,185,129,.07);
+  border-color: rgba(16,185,129,.25);
+  color: #34d399;
+}
+.tts-btn-all:hover {
+  background: rgba(16,185,129,.16);
+  border-color: rgba(16,185,129,.5);
+  color: #6ee7b7;
+}
+
+/* Botão ativo (modo em execução) */
+.tts-btn-mode-active {
+  animation: ttsModePulse 1.4s ease-in-out infinite;
+}
+@keyframes ttsModePulse {
+  0%,100% { box-shadow: 0 0 0 0 rgba(245,197,24,.3); }
+  50%      { box-shadow: 0 0 0 4px rgba(245,197,24,.0); }
+}
+.tts-btn-sec.tts-btn-mode-active {
+  animation: ttsSecPulse 1.4s ease-in-out infinite;
+}
+@keyframes ttsSecPulse {
+  0%,100% { box-shadow: 0 0 0 0 rgba(59,130,246,.3); }
+  50%      { box-shadow: 0 0 0 4px rgba(59,130,246,.0); }
+}
+.tts-btn-all.tts-btn-mode-active {
+  animation: ttsAllPulse 1.4s ease-in-out infinite;
+}
+@keyframes ttsAllPulse {
+  0%,100% { box-shadow: 0 0 0 0 rgba(16,185,129,.3); }
+  50%      { box-shadow: 0 0 0 4px rgba(16,185,129,.0); }
+}
+
+/* Pausa e Stop */
+.tts-btn-pause {
+  background: rgba(59,130,246,.1);
+  border-color: rgba(59,130,246,.4);
+  color: #93c5fd;
+  font-weight: 600;
+}
+.tts-btn-stop {
+  background: rgba(239,68,68,.08);
+  border-color: rgba(239,68,68,.3);
+  color: #f87171;
+}
+
+/* Velocidade */
+.tts-rate-ctrl {
+  display: flex;
+  align-items: center;
+  gap: .35rem;
+  margin-left: auto;
+}
+.tts-rate-slider {
+  width: 75px;
+  accent-color: var(--accent);
+  cursor: pointer;
+}
+.tts-rate-val {
+  font-family: 'DM Mono', monospace;
+  font-size: .67rem;
+  color: var(--accent);
+  min-width: 2.2rem;
+  text-align: right;
+}
+
+/* Destaque de frase/seção no conteúdo */
+.tts-sent {
+  border-radius: 3px;
+  transition: background .18s, color .18s;
+  cursor: default;
+  display: inline;
+  padding: 0 1px;
+}
+.tts-sent-active {
+  background: rgba(245,197,24,.22);
+  color: #fff;
+  outline: 1px solid rgba(245,197,24,.4);
+  border-radius: 3px;
+}
+.tts-sec-active {
+  border-left: 3px solid var(--accent) !important;
+}
+
+/* Push main content above bar */
+main {
+  padding-bottom: 7.5rem;
+}
+
+/* ── Responsividade do player ── */
+@media (max-width: 600px) {
+  .tts-player { padding: .4rem .6rem .45rem; }
+  .tts-sec-name, .tts-position { display: none; }
+  .tts-rate-slider { width: 55px; }
+  .tts-group-label { display: none; }
+  .tts-divider { display: none; }
+  .tts-controls-row { gap: .25rem; }
+  .tts-ctrl-btn { font-size: .68rem; padding: .28rem .45rem; }
+}
+@media (max-width: 400px) {
+  .tts-player { padding: .35rem .5rem; }
+  .tts-rate-ctrl { display: none; }
+}
+
+/* Stat cards: 2 columns on tablet, 1 on mobile */
+.stat-cards {
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+}
+@media (max-width: 480px) {
+  .stat-cards { grid-template-columns: 1fr 1fr; }
+  .hero-banner { padding: 1.5rem; }
+  .hero-title { font-size: 1.2rem; }
+  .hero-sub { font-size: .8rem; }
+  .module-card { padding: 1.2rem; }
+  .section-title { font-size: 1.2rem; }
+  .tts-rate-ctrl { display: none; } /* Hide rate slider on very small screens */
+  .tts-position { display: none; }
+  main { padding: .75rem; padding-bottom: 8rem; }
+  header { padding: 0 .75rem; }
+  .header-inner { gap: .7rem; height: 56px; }
+  .logo { font-size: .72rem; }
+}
+@media (max-width: 768px) {
+  /* Infraction table horizontal scroll */
+  .infraction-table { min-width: 580px; font-size: .75rem; }
+  /* Lesson sidebar becomes horizontal scroller */
+  .sidebar {
+    display: flex;
+    flex-direction: row;
+    overflow-x: auto;
+    gap: .35rem;
+    padding-bottom: .5rem;
+    scrollbar-width: none;
+  }
+  .sidebar::-webkit-scrollbar { display: none; }
+  .sidebar-item {
+    flex-shrink: 0;
+    min-width: 110px;
+    font-size: .72rem;
+  }
+  .sidebar-title { display: none; }
+  /* Lesson header smaller */
+  .lesson-emoji { font-size: 2rem; }
+  /* Modules grid */
+  .modules-grid { grid-template-columns: 1fr 1fr; gap: .75rem; }
+  /* Signs grid */
+  .signs-grid { grid-template-columns: repeat(auto-fill, minmax(90px, 1fr)); }
+  /* TTS player */
+  .tts-player { padding: .45rem .75rem; }
+  .tts-rate-slider { width: 60px; }
+}
+@media (max-width: 400px) {
+  .modules-grid { grid-template-columns: 1fr; }
+}
+
+/* Simulator responsive */
+@media (max-width: 768px) {
+  .ts-layout {
+    flex-direction: column;
+  }
+  .ts-canvas-wrap {
+    width: 100%;
+    height: 250px;
+  }
+  .ts-side-panel {
+    max-height: 350px;
+    overflow-y: auto;
+  }
+  .ts-toolbar {
+    padding: .5rem;
+    gap: .4rem;
+  }
+  .ts-btn-row {
+    flex-wrap: wrap;
+    gap: .3rem;
+  }
+}
+
+/* Lesson nav buttons responsive */
+.lesson-nav {
+  display: flex;
+  gap: .5rem;
+  flex-wrap: wrap;
+}
+.lesson-nav .btn-nav {
+  flex: 1;
+  min-width: 120px;
+  text-align: center;
+}
+
+/* Make concept cards readable on mobile */
+@media (max-width: 600px) {
+  .concept-card { padding: 1rem; }
+  .concept-body { font-size: .84rem; }
+  .concept-title { font-size: .92rem; }
+  .highlight-box { font-size: .82rem; padding: .75rem 1rem; }
+}
+
+/* ── CARD TTS BUTTON (botão de leitura inline por card) ── */
+.concept-title {
+  display: flex;
+  align-items: center;
+  gap: .5rem;
+  flex-wrap: wrap;
+}
+
+.card-tts-btn {
+  margin-left: auto;
+  background: rgba(245,197,24,.08);
+  border: 1px solid rgba(245,197,24,.25);
+  color: var(--accent);
+  border-radius: 6px;
+  padding: .2rem .5rem;
+  font-size: .78rem;
+  cursor: pointer;
+  transition: all .2s;
+  line-height: 1;
+  flex-shrink: 0;
+  white-space: nowrap;
+}
+.card-tts-btn:hover {
+  background: rgba(245,197,24,.18);
+  border-color: rgba(245,197,24,.5);
+  transform: scale(1.05);
+}
+.card-tts-btn.playing {
+  background: rgba(239,68,68,.12);
+  border-color: rgba(239,68,68,.4);
+  color: #ef4444;
+  animation: cardTtsPulse 1.4s ease-in-out infinite;
+}
+@keyframes cardTtsPulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(239,68,68,.35); }
+  50%       { box-shadow: 0 0 0 5px rgba(239,68,68,0); }
+}
+
+/* Botão nos boxes de destaque (warn/info/highlight) */
+.card-tts-btn--box {
+  display: inline-block;
+  float: right;
+  margin: 0 0 .25rem .5rem;
+  background: rgba(255,255,255,.06);
+  border-color: rgba(255,255,255,.15);
+  color: var(--muted);
+}
+.card-tts-btn--box:hover {
+  background: rgba(255,255,255,.12);
+  color: var(--text);
+}
+.card-tts-btn--box.playing {
+  color: #ef4444;
+  border-color: rgba(239,68,68,.4);
+  background: rgba(239,68,68,.1);
+}
+
+/* Card pulsando durante leitura */
+.card-tts-playing {
+  border-color: rgba(245,197,24,.4) !important;
+  box-shadow: 0 0 0 2px rgba(245,197,24,.12), 0 4px 20px rgba(245,197,24,.08) !important;
+  transition: box-shadow .3s, border-color .3s;
+}
+.warn-box.card-tts-playing, .info-box.card-tts-playing, .highlight-box.card-tts-playing {
+  box-shadow: 0 0 0 2px rgba(245,197,24,.2) !important;
+}

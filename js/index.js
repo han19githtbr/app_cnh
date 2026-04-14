@@ -132,11 +132,11 @@ function renderModulesHome() {
   if (statQuestions) statQuestions.textContent = DB.simulado.length + '+';
   if (statLessons)   statLessons.textContent   = DB.modules.reduce((a, m) => a + m.lessons.length, 0);
 
-  grid.innerHTML = DB.modules.map(mod => `
+  grid.innerHTML = DB.modules.map((mod, modIdx) => `
     <div class="module-card" onclick="openModule(${mod.id})">
       <div class="module-status status-${mod.status}">
-        ${ mod.status === 'em-andamento' ? 'Em andamento' :
-           mod.status === 'concluido'    ? 'Concluído'    : 'Não iniciado' }
+        ${ mod.status === 'em-andamento' ? (typeof t==='function'?t('statusEmAndamento'):'Em andamento') :
+           mod.status === 'concluido'    ? (typeof t==='function'?t('statusConcluido'):'Concluído')    : (typeof t==='function'?t('statusNaoIniciado'):'Não iniciado') }
       </div>
       <div class="module-num">Módulo 0${mod.id}</div>
       <div class="module-icon">${mod.icon}</div>
@@ -222,12 +222,92 @@ function renderLesson() {
   // interativos
   if (lesson.type === 'semaforo') initSemaforo();
   initQuiz(lesson.id, lesson.quiz);
+
+  // TTS: recarrega seções da aula toda para o player global
+  setTimeout(() => {
+    const el = document.getElementById('module-content-inner');
+    if (el && typeof TTS !== 'undefined') {
+      const secs = TTS.buildSectionsFromElement(el);
+      TTS.load(secs);
+    }
+  }, 300);
+}
+
+// ─────────────────────────────────────────────────────
+// LEITURA DE ÁUDIO POR CARD (inline)
+// ─────────────────────────────────────────────────────
+
+let _cardTTSActive = null;
+let _cardTTSUtter  = null;
+
+function playCard(cardId) {
+  const card = document.getElementById(cardId);
+  if (!card) return;
+
+  if (_cardTTSActive === cardId) {
+    _stopCardTTS();
+    return;
+  }
+
+  _stopCardTTS();
+  if (typeof TTS !== 'undefined') TTS.stop();
+
+  const titleEl = card.querySelector('.concept-title');
+  const bodyEl  = card.querySelector('.concept-body');
+  const rawTitle = titleEl ? titleEl.textContent.replace('🔊','').replace('⏹','').trim() : '';
+  const rawBody  = bodyEl  ? (bodyEl.textContent || bodyEl.innerText || '').trim()
+                           : card.textContent.replace('🔊','').replace('⏹','').trim();
+  const text = [rawTitle, rawBody].filter(Boolean).join('. ');
+  if (!text) return;
+
+  _cardTTSActive = cardId;
+  card.classList.add('card-tts-playing');
+  _updateCardBtn(cardId, true);
+
+  const lang = (typeof getLangVoice === 'function') ? getLangVoice() : 'pt-BR';
+  const rate = parseFloat(document.getElementById('tts-rate')?.value || '1');
+
+  _cardTTSUtter = new SpeechSynthesisUtterance(text);
+  _cardTTSUtter.lang  = lang;
+  _cardTTSUtter.rate  = rate;
+  _cardTTSUtter.pitch = 1;
+  _cardTTSUtter.onend   = () => _stopCardTTS(cardId);
+  _cardTTSUtter.onerror = () => _stopCardTTS(cardId);
+
+  window.speechSynthesis.speak(_cardTTSUtter);
+}
+
+function _stopCardTTS(cardId) {
+  if (_cardTTSUtter) {
+    _cardTTSUtter.onend = null;
+    _cardTTSUtter.onerror = null;
+    _cardTTSUtter = null;
+  }
+  window.speechSynthesis.cancel();
+  document.querySelectorAll('.card-tts-playing').forEach(el => el.classList.remove('card-tts-playing'));
+  document.querySelectorAll('.card-tts-btn').forEach(b => {
+    b.textContent = '🔊';
+    b.classList.remove('playing');
+    b.title = 'Ouvir este conteúdo';
+  });
+  _cardTTSActive = null;
+}
+
+function _updateCardBtn(cardId, isPlaying) {
+  const card = document.getElementById(cardId);
+  if (!card) return;
+  const btn = card.querySelector('.card-tts-btn');
+  if (!btn) return;
+  btn.textContent = isPlaying ? '⏹' : '🔊';
+  btn.classList.toggle('playing', isPlaying);
+  btn.title = isPlaying ? 'Parar leitura' : 'Ouvir este conteúdo';
 }
 
 // ─────────────────────────────────────────────────────
 // CONSTRUIR CORPO DA AULA (a partir dos dados JSON)
 // ─────────────────────────────────────────────────────
-function buildLessonBody(lesson) {
+function buildLessonBody(lesson, modIdx, lessonIdx) {
+  const _lt = (typeof getModuleTranslation==='function' && modIdx!==undefined && lessonIdx!==undefined) ? getModuleTranslation(modIdx, lessonIdx) : null;
   let html = '';
 
   // semáforo interativo
@@ -242,17 +322,25 @@ function buildLessonBody(lesson) {
   }
 
   // conceitos
-  (lesson.concepts || []).forEach(c => {
-    html += `<div class="concept-card">
-      <div class="concept-title"><span style="font-size:1.1rem">${c.icon}</span> ${c.title}</div>
+  (lesson.concepts || []).forEach((c, ci) => {
+    const cardId = `cc-${lesson.id}-${ci}`;
+    html += `<div class="concept-card" id="${cardId}">
+      <div class="concept-title">
+        <span style="font-size:1.1rem">${c.icon}</span> ${c.title}
+        <button class="card-tts-btn" onclick="playCard('${cardId}')" title="Ouvir este conteúdo">🔊</button>
+      </div>
       <div class="concept-body">${c.body.replace(/\n/g, '<br>')}</div>
     </div>`;
   });
 
   // highlights/warns
-  (lesson.highlights || []).forEach(h => {
+  (lesson.highlights || []).forEach((h, hi) => {
     const cls = h.type === 'warn' ? 'warn-box' : h.type === 'info' ? 'info-box' : 'highlight-box';
-    html += `<div class="${cls}">${h.text}</div>`;
+    const boxId = `hl-${lesson.id}-${hi}`;
+    html += `<div class="${cls}" id="${boxId}">
+      <button class="card-tts-btn card-tts-btn--box" onclick="playCard('${boxId}')" title="Ouvir este conteúdo">🔊</button>
+      ${h.text}
+    </div>`;
   });
 
   return html;
@@ -311,7 +399,8 @@ function setSemaforo(color) {
 // ─────────────────────────────────────────────────────
 // QUIZ DA AULA
 // ─────────────────────────────────────────────────────
-function buildQuizHTML(lesson) {
+function buildQuizHTML(lesson, modIdx, lessonIdx) {
+  const _qlt = (typeof getModuleTranslation==='function' && modIdx!==undefined && lessonIdx!==undefined) ? getModuleTranslation(modIdx, lessonIdx) : null;
   if (!lesson.quiz || !lesson.quiz.length) return '';
   return `
     <div class="quiz-section" id="quiz-${lesson.id}">
@@ -328,7 +417,8 @@ function initQuiz(id, questions) {
   const saved = APP_PROGRESS.quizzes[id];
   const current = saved?.current != null ? Math.min(saved.current, questions.length) : 0;
   const score = saved?.score != null ? saved.score : 0;
-  quizStates[id] = { questions, current, score, answered: false };
+  quizStates[id] = {
+    _modIdx: modIdx, _lessonIdx: lessonIdx, questions, current, score, answered: false };
   renderQuizQuestion(id);
 }
 
@@ -582,6 +672,7 @@ function buildSignShape(type, symbol) {
 }
 
 function filterPlacas(cat, btn) {
+  window._currentPlacaFilter = cat;
   document.querySelectorAll('#sec-placas .scenario-btn').forEach(b => b.classList.remove('active'));
   btn.classList.add('active');
   renderPlacasGrid(cat);
