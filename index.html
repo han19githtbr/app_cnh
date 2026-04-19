@@ -117,6 +117,8 @@
   <div id="sec-placas" class="section">
     <div class="section-title">🛑 Guia Completo de Placas</div>
     <div class="section-sub">Clique em qualquer placa para ver detalhes e exemplos</div>
+    <img src="img/school-zone.jpg" alt="Placa de área escolar e travessia de pedestres em rua residencial" class="support-img" loading="lazy">
+    <div class="support-img-cap">// Sinalização real em zona escolar — placa de advertência + limite de 30 km/h</div>
     <div style="display:flex;gap:.5rem;margin-bottom:1.5rem;flex-wrap:wrap">
       <button class="scenario-btn placas-filter-btn active" data-filter="todas" onclick="filterPlacas('todas', this)">Todas</button>
       <button class="scenario-btn placas-filter-btn" data-filter="regulamentacao" onclick="filterPlacas('regulamentacao', this)">Regulamentação</button>
@@ -136,6 +138,8 @@
   <div id="sec-infracoes" class="section">
     <div class="section-title">⚠️ Infrações e Penalidades</div>
     <div class="section-sub">Sistema de pontos e multas conforme o CTB</div>
+    <img src="img/hero-urban.jpg" alt="Cruzamento urbano com semáforos, faixa de pedestres e veículos" class="support-img" loading="lazy">
+    <div class="support-img-cap">// Cenário urbano típico — onde a maioria das infrações acontece</div>
     <div class="concept-card" style="margin-bottom:1.5rem">
       <div class="concept-title">📊 Sistema de Pontos da CNH</div>
       <div class="concept-body">
@@ -160,6 +164,8 @@
   <div id="sec-direcao" class="section">
     <div class="section-title">🛞 Direção Segura</div>
     <div class="section-sub">Técnicas de direção defensiva e situações de risco</div>
+    <img src="img/highway.jpg" alt="Rodovia brasileira com sinalização e veículos circulando" class="support-img" loading="lazy">
+    <div class="support-img-cap">// Em rodovia: farol baixo obrigatório, distância dobrada e atenção máxima</div>
     <div class="modules-grid" id="direcao-cards-grid"
       style="grid-template-columns:repeat(auto-fill,minmax(250px,1fr))"></div>
     <div id="direcao-detail" style="display:none;margin-top:1.5rem">
@@ -340,7 +346,7 @@
     document.getElementById('mobile-overlay').classList.remove('open');
   }
 
-  const _origShowTab = showTab;
+  var _origShowTab = showTab;
   window.showTab = function(id, el, fromMobile = false) {
     _origShowTab(id, el);
     document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
@@ -369,7 +375,7 @@
   }
 
   // Hook into renderLesson to auto-load TTS
-  const _origRenderLesson = typeof renderLesson === 'function' ? renderLesson : null;
+  var _origRenderLesson = typeof renderLesson === 'function' ? renderLesson : null;
   if (typeof window !== 'undefined') {
     window._ttsLessonHook = function() {
       setTimeout(() => {
