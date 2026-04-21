@@ -60,19 +60,19 @@
       </div>
       <div class="stat-cards">
         <div class="stat-card">
-          <div class="stat-number" id="stat-modules">4</div>
+          <div class="stat-number" id="stat-modules">6</div>
           <div class="stat-label">Módulos de estudo</div>
         </div>
         <div class="stat-card">
-          <div class="stat-number" id="stat-questions">10+</div>
+          <div class="stat-number" id="stat-questions">130+</div>
           <div class="stat-label">Questões de simulado</div>
         </div>
         <div class="stat-card">
-          <div class="stat-number" id="stat-lessons">16</div>
+          <div class="stat-number" id="stat-lessons">28</div>
           <div class="stat-label">Aulas interativas</div>
         </div>
         <div class="stat-card">
-          <div class="stat-number">15+</div>
+          <div class="stat-number">25+</div>
           <div class="stat-label">Cenas visuais</div>
         </div>
       </div>
@@ -87,25 +87,58 @@
   <!-- ── SIMULADO ──────────────────────────────── -->
   <div id="sec-simulado" class="section">
     <div class="section-title">📝 Simulado de Trânsito</div>
-    <div class="section-sub">Questões no estilo do exame do Detran · 45 minutos</div>
+    <div class="section-sub">Questões no estilo do exame do Detran · Modo treino ou modo oficial</div>
     <div class="simulado-container">
       <div id="sim-start-screen">
+
+        <!-- Mode selector -->
+        <div class="sim-mode-grid">
+          <div class="sim-mode-card" id="sim-mode-card-treino" onclick="simSelectMode('treino')">
+            <div class="sim-mode-icon">🎯</div>
+            <div class="sim-mode-title">Modo Treino</div>
+            <div class="sim-mode-desc">Banco completo · Sem tempo · Mostra resposta na hora · Ideal para estudar</div>
+            <div class="sim-mode-meta"><span id="sim-mode-treino-meta">— questões</span> · sem limite</div>
+          </div>
+          <div class="sim-mode-card sim-mode-card-active" id="sim-mode-card-oficial" onclick="simSelectMode('oficial')">
+            <div class="sim-mode-icon">🏛️</div>
+            <div class="sim-mode-title">Modo Prova Oficial</div>
+            <div class="sim-mode-desc">Idêntico ao DETRAN · 30 questões aleatórias · 45 min · 70% para aprovação</div>
+            <div class="sim-mode-meta">30 questões · 45 minutos</div>
+          </div>
+          <div class="sim-mode-card" id="sim-mode-card-categoria" onclick="simSelectMode('categoria')">
+            <div class="sim-mode-icon">📚</div>
+            <div class="sim-mode-title">Por Categoria</div>
+            <div class="sim-mode-desc">Pratique tema específico: legislação, álcool, velocidade, mecânica…</div>
+            <div class="sim-mode-meta" id="sim-mode-cat-meta">10 categorias</div>
+          </div>
+        </div>
+
+        <!-- Categoria selector (hidden by default) -->
+        <div id="sim-cat-picker" style="display:none;margin-bottom:1rem">
+          <div class="ts-panel-label" style="margin-bottom:.6rem">Escolha o tema:</div>
+          <div id="sim-cat-buttons" class="ts-btn-row" style="flex-wrap:wrap;gap:.4rem"></div>
+        </div>
+
         <div class="concept-card" style="margin-bottom:1rem">
-          <div class="concept-title">ℹ️ Como funciona o exame real?</div>
+          <div class="concept-title">ℹ️ Como funciona o exame real do DETRAN?</div>
           <div class="concept-body">
             O exame teórico do Detran tem <strong>30 questões</strong> objetivas.
             Para aprovação, são necessários <strong>21 acertos</strong> (70%).
             O tempo é de <strong>45 minutos</strong>. As questões abordam sinalização,
-            infrações, direção defensiva e meio ambiente.
+            infrações, direção defensiva, mecânica básica, primeiros socorros e meio ambiente.
           </div>
         </div>
         <div class="highlight-box">
           <strong>Dica:</strong> O candidato só pode errar <strong>9 questões</strong>.
-          Fique atento às questões sobre álcool e velocidade — são as mais cobradas!
+          Álcool, velocidade e Lei Seca são os temas mais cobrados!
         </div>
+
+        <!-- Histórico de tentativas -->
+        <div id="sim-history" style="margin-top:1.4rem"></div>
+
         <button id="btn-start-sim" class="sim-btn sim-btn-primary" onclick="startSimulado()"
           style="font-size:.85rem;padding:.8rem 2rem;margin-top:1rem">
-          ▶ Iniciar Simulado
+          ▶ Iniciar Prova Oficial
         </button>
       </div>
       <div id="sim-quiz-area"   style="display:none"></div>
@@ -298,8 +331,10 @@
             <div class="ts-leg-row"><span class="ts-leg-dot" style="background:#f59e0b"></span>Motocicleta</div>
             <div class="ts-leg-row"><span class="ts-leg-dot" style="background:#8b5cf6"></span>Ônibus / Caminhão</div>
             <div class="ts-leg-row"><span class="ts-leg-dot" style="background:#f8fafc"></span>Ambulância (SAMU)</div>
+            <div class="ts-leg-row"><span class="ts-leg-dot" style="background:#1d4ed8"></span>Viatura Policial (PM)</div>
             <div class="ts-leg-row"><span class="ts-leg-dot" style="background:#22c55e"></span>Pedestre seguro</div>
             <div class="ts-leg-row"><span class="ts-leg-dot" style="background:#f97316"></span>Pedestre imprudente</div>
+            <div class="ts-leg-row"><span class="ts-leg-dot" style="background:#e2e8f0;border:2px solid #ef4444;border-radius:50%"></span>Pedestre atropelado</div>
             <div class="ts-leg-row"><span class="ts-leg-rect" style="background:repeating-linear-gradient(90deg,#fbbf24 0,#fbbf24 8px,transparent 8px,transparent 16px)"></span>Faixa de pedestre</div>
             <div class="ts-leg-row"><span class="ts-leg-rect" style="background:rgba(251,191,36,.2);border:1px solid #fbbf24"></span>Zona escolar 30km/h</div>
             <div class="ts-leg-row"><span class="ts-leg-dot" style="background:#fbbf24;border-radius:2px"></span>Lombada / redutor</div>

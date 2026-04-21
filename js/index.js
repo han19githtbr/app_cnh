@@ -96,6 +96,8 @@ async function boot() {
     renderInfracoes();
     renderDirecaoCards();
     updateSimStartButton();
+    if (typeof renderSimCategories === 'function') renderSimCategories();
+    if (typeof renderSimHistory === 'function') renderSimHistory();
   } catch (e) {
     document.body.innerHTML = `
       <div style="color:#ef4444;padding:3rem;font-family:monospace;background:#0a0e1a;min-height:100vh">
@@ -489,157 +491,181 @@ function restartQuiz(id) {
 }
 
 // ─────────────────────────────────────────────────────
-// SIMULADO
+// SIMULADO — 3 modos: treino, oficial, categoria
 // ─────────────────────────────────────────────────────
-function startSimulado() {
-  const saved = APP_PROGRESS.simulado;
-  const total = DB.simulado.length;
-  if (saved?.active && saved.timeLeft > 0 && saved.current < total) {
-    simState = {
-      current: saved.current,
-      score: saved.score,
-      answered: saved.answered,
-      timeLeft: saved.timeLeft,
-      timer: null
-    };
-  } else {
-    simState = {
-      current: 0,
-      score: 0,
-      answered: false,
-      timeLeft: (DB.meta.simuladoMinutes || 45) * 60,
-      timer: null
-    };
-    clearSimProgress();
-  }
+const SIM_HISTORY_KEY = 'cnhBrasilSimHistory';
+const CAT_LABELS = {
+  legislacao:'⚖️ Legislação', sinalizacao:'🚦 Sinalização', defensiva:'🛞 Defensiva',
+  velocidade:'💨 Velocidade', ultrapassagem:'↔️ Ultrapassagem', alcool:'🍺 Lei Seca',
+  mecanica:'🔧 Mecânica', ambiente:'🌱 Ambiente', socorros:'🚑 Socorros',
+  cidadania:'🤝 Cidadania', especiais:'🚨 Especiais', exame:'📋 Exame', geral:'📚 Geral'
+};
+let simMode = 'oficial';
+let simCategory = null;
+let simQuestions = [];
 
-  APP_PROGRESS.simulado = {
-    active: true,
-    current: simState.current,
-    score: simState.score,
-    timeLeft: simState.timeLeft,
-    answered: simState.answered
-  };
-  saveUserProgress();
+function getSimHistory(){ try{return JSON.parse(localStorage.getItem(SIM_HISTORY_KEY))||[];}catch{return[];} }
+function pushSimHistory(e){ const all=getSimHistory(); all.unshift(e); localStorage.setItem(SIM_HISTORY_KEY,JSON.stringify(all.slice(0,30))); }
+function clearSimHistory(){ localStorage.removeItem(SIM_HISTORY_KEY); renderSimHistory(); }
+function shuffle(arr){ const a=arr.slice(); for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];} return a; }
 
-  document.getElementById('sim-start-screen').style.display = 'none';
-  document.getElementById('sim-quiz-area').style.display = 'block';
-  renderSimQuestion();
-  simState.timer = setInterval(() => {
-    simState.timeLeft--;
-    if (simState.timeLeft < 0) simState.timeLeft = 0;
-    const el = document.getElementById('sim-timer-disp');
-    if (el) {
-      const m = Math.floor(simState.timeLeft / 60);
-      const s = simState.timeLeft % 60;
-      el.textContent = `${m}:${s.toString().padStart(2, '0')}`;
-    }
-    if (simState.timeLeft <= 0) endSimulado();
-    if (simState.timeLeft % 5 === 0) persistSimState();
-  }, 1000);
+function simSelectMode(mode){
+  simMode=mode;
+  ['treino','oficial','categoria'].forEach(m=>{const c=document.getElementById('sim-mode-card-'+m); if(c)c.classList.toggle('sim-mode-card-active',m===mode);});
+  const picker=document.getElementById('sim-cat-picker'); if(picker) picker.style.display=(mode==='categoria')?'block':'none';
+  const btn=document.getElementById('btn-start-sim');
+  if(btn) btn.textContent = mode==='oficial'?'▶ Iniciar Prova Oficial' : mode==='treino'?'▶ Iniciar Modo Treino' : '▶ Iniciar prática por tema';
 }
 
-function renderSimQuestion() {
-  const questions = DB.simulado;
-  if (simState.current >= questions.length) { endSimulado(); return; }
+function renderSimCategories(){
+  const wrap=document.getElementById('sim-cat-buttons'); if(!wrap||!DB) return;
+  const counts={}; DB.simulado.forEach(q=>{counts[q.cat||'geral']=(counts[q.cat||'geral']||0)+1;});
+  const cats=Object.keys(counts).sort();
+  wrap.innerHTML=cats.map(c=>`<button class="ts-sm-btn ${simCategory===c?'ts-sm-on':''}" onclick="simPickCategory('${c}')">${CAT_LABELS[c]||c} <small>(${counts[c]})</small></button>`).join('');
+  const tm=document.getElementById('sim-mode-treino-meta'); if(tm) tm.textContent=`${DB.simulado.length} questões`;
+  const meta=document.getElementById('sim-mode-cat-meta'); if(meta) meta.textContent=`${cats.length} categorias`;
+}
+function simPickCategory(cat){ simCategory=cat; renderSimCategories(); }
 
-  const q        = questions[simState.current];
-  const progress = (simState.current / questions.length * 100).toFixed(0);
-  const m        = Math.floor(simState.timeLeft / 60);
-  const s        = simState.timeLeft % 60;
+function renderSimHistory(){
+  const el=document.getElementById('sim-history'); if(!el) return;
+  const hist=getSimHistory(); if(!hist.length){el.innerHTML='';return;}
+  const aggCat={};
+  hist.forEach(h=>{ if(h.byCat) Object.entries(h.byCat).forEach(([c,v])=>{aggCat[c]=aggCat[c]||{ok:0,total:0}; aggCat[c].ok+=v.ok; aggCat[c].total+=v.total;}); });
+  const catBars=Object.entries(aggCat).sort((a,b)=>b[1].total-a[1].total).slice(0,8).map(([c,v])=>{
+    const pct=Math.round(v.ok/v.total*100); const color=pct>=70?'#10b981':pct>=50?'#fbbf24':'#ef4444';
+    return `<div class="sim-hist-bar-row"><div class="sim-hist-bar-lbl">${CAT_LABELS[c]||c}</div><div class="sim-hist-bar-track"><div class="sim-hist-bar-fill" style="width:${pct}%;background:${color}"></div></div><div class="sim-hist-bar-pct">${pct}% <small style="opacity:.5">(${v.ok}/${v.total})</small></div></div>`;
+  }).join('');
+  const last=hist.slice(0,6).map(h=>{
+    const ok=h.score>=Math.ceil((h.passingScore||70)/100*h.total);
+    return `<div class="sim-hist-item"><div class="sim-hist-item-icon" style="color:${ok?'#10b981':'#ef4444'}">${ok?'✓':'✗'}</div><div class="sim-hist-item-info"><div class="sim-hist-item-mode">${h.modeLabel||h.mode}</div><div class="sim-hist-item-meta">${new Date(h.at).toLocaleString('pt-BR',{dateStyle:'short',timeStyle:'short'})} · ${h.timeUsed||'—'}</div></div><div class="sim-hist-item-score" style="color:${ok?'#10b981':'#ef4444'}">${h.score}/${h.total}</div></div>`;
+  }).join('');
+  el.innerHTML=`<div class="concept-card"><div class="concept-title">📊 Seu desempenho</div><div class="concept-body" style="padding-top:.6rem">${catBars?`<div class="sim-hist-bars">${catBars}</div>`:''}<div class="sim-hist-list" style="margin-top:1rem"><div class="sim-hist-list-title">Últimas tentativas</div>${last}</div><button class="ts-sm-btn" style="margin-top:.8rem" onclick="if(confirm('Apagar histórico?'))clearSimHistory()">🗑 Limpar histórico</button></div></div>`;
+}
 
-  document.getElementById('sim-quiz-area').innerHTML = `
+function startSimulado(){
+  let pool, modeLabel, timeLimitSec;
+  if(simMode==='oficial'){
+    pool=shuffle(DB.simulado).slice(0,30); modeLabel='🏛️ Prova Oficial';
+    timeLimitSec=(DB.meta.simuladoMinutes||45)*60;
+  } else if(simMode==='categoria'){
+    if(!simCategory){alert('Escolha uma categoria primeiro');return;}
+    pool=shuffle(DB.simulado.filter(q=>(q.cat||'geral')===simCategory)).slice(0,20);
+    if(pool.length<3){alert('Poucas questões nessa categoria.');return;}
+    modeLabel=`📚 ${CAT_LABELS[simCategory]||simCategory}`; timeLimitSec=0;
+  } else {
+    pool=shuffle(DB.simulado); modeLabel='🎯 Modo Treino'; timeLimitSec=0;
+  }
+  simQuestions=pool;
+  simState={current:0,score:0,answered:false,timeLeft:timeLimitSec,timer:null,mode:simMode,modeLabel,answers:[],startTs:Date.now()};
+  clearSimProgress();
+  document.getElementById('sim-start-screen').style.display='none';
+  document.getElementById('sim-quiz-area').style.display='block';
+  document.getElementById('sim-result-area').style.display='none';
+  renderSimQuestion();
+  if(timeLimitSec>0){
+    simState.timer=setInterval(()=>{
+      simState.timeLeft--;
+      const el=document.getElementById('sim-timer-disp');
+      if(el){const m=Math.floor(simState.timeLeft/60);const s=simState.timeLeft%60;
+        el.textContent=`${m}:${s.toString().padStart(2,'0')}`;
+        if(simState.timeLeft<=60) el.classList.add('sim-timer-low');}
+      if(simState.timeLeft<=0) endSimulado();
+    },1000);
+  }
+}
+
+function renderSimQuestion(){
+  if(simState.current>=simQuestions.length){endSimulado();return;}
+  const q=simQuestions[simState.current];
+  const progress=(simState.current/simQuestions.length*100).toFixed(0);
+  const m=Math.floor(simState.timeLeft/60); const s=simState.timeLeft%60;
+  const showTimer=simState.timeLeft>0;
+  const catBadge=q.cat?`<span class="sim-cat-badge">${CAT_LABELS[q.cat]||q.cat}</span>`:'';
+  document.getElementById('sim-quiz-area').innerHTML=`
     <div class="sim-question-area">
       <div class="sim-q-header">
-        <div class="sim-q-num">Questão ${simState.current + 1} / ${questions.length}</div>
-        <div class="sim-timer" id="sim-timer-disp">${m}:${s.toString().padStart(2,'0')}</div>
+        <div class="sim-q-num">${simState.modeLabel} · Questão ${simState.current+1} / ${simQuestions.length}</div>
+        ${showTimer?`<div class="sim-timer" id="sim-timer-disp">${m}:${s.toString().padStart(2,'0')}</div>`:`<div class="sim-timer" style="background:transparent;border:none;color:var(--muted);font-size:.7rem">⏱ Sem limite</div>`}
       </div>
-      <div class="sim-progress-bar">
-        <div class="sim-progress-fill" style="width:${progress}%"></div>
-      </div>
+      <div class="sim-progress-bar"><div class="sim-progress-fill" style="width:${progress}%"></div></div>
       <div class="sim-q-body">
+        ${catBadge}
         <div class="sim-q-text">${q.q}</div>
         <div class="sim-options">
-          ${q.opts.map((o, i) => `
-            <button class="sim-opt" onclick="answerSim(${i})">
-              <span class="sim-opt-letter">${'ABCD'[i]}</span>${o}
-            </button>`).join('')}
+          ${q.opts.map((o,i)=>`<button class="sim-opt" onclick="answerSim(${i})"><span class="sim-opt-letter">${'ABCD'[i]}</span>${o}</button>`).join('')}
         </div>
         <div id="sim-feedback" style="display:none;margin-top:1rem;padding:.75rem 1rem;border-radius:8px;font-size:.83rem;line-height:1.6"></div>
       </div>
     </div>
     <div class="sim-controls">
       <button class="sim-btn sim-btn-secondary" onclick="endSimulado()">Encerrar</button>
-      <button class="sim-btn sim-btn-primary" id="sim-next-btn" onclick="nextSim()" style="display:none">Próxima →</button>
+      <button class="sim-btn sim-btn-primary" id="sim-next-btn" onclick="nextSim()" style="display:none">${simState.current+1===simQuestions.length?'Finalizar ✓':'Próxima →'}</button>
     </div>`;
-  simState.answered = false;
+  simState.answered=false;
 }
 
-function answerSim(idx) {
-  if (simState.answered) return;
-  simState.answered = true;
-
-  const q    = DB.simulado[simState.current];
-  const opts = document.querySelectorAll('.sim-opt');
-  opts.forEach(o => o.disabled = true);
+function answerSim(idx){
+  if(simState.answered) return; simState.answered=true;
+  const q=simQuestions[simState.current];
+  const opts=document.querySelectorAll('.sim-opt');
+  opts.forEach(o=>o.disabled=true);
   opts[q.correct].classList.add('correct');
-  if (idx !== q.correct) opts[idx].classList.add('wrong');
-  else simState.score++;
-
-  persistSimState();
-
-  const ok = idx === q.correct;
-  const fb = document.getElementById('sim-feedback');
-  fb.style.cssText = `display:block;
-    background:${ok ? 'rgba(16,185,129,.1)' : 'rgba(239,68,68,.1)'};
-    border:1px solid ${ok ? 'rgba(16,185,129,.25)' : 'rgba(239,68,68,.25)'};
-    color:${ok ? '#a7f3d0' : '#fca5a5'}`;
-  fb.textContent = q.exp;
-  document.getElementById('sim-next-btn').style.display = 'inline-block';
+  if(idx!==q.correct) opts[idx].classList.add('wrong'); else simState.score++;
+  simState.answers.push({cat:q.cat||'geral',correct:idx===q.correct,picked:idx,correctIdx:q.correct});
+  const ok=idx===q.correct;
+  const fb=document.getElementById('sim-feedback');
+  fb.style.cssText=`display:block;background:${ok?'rgba(16,185,129,.1)':'rgba(239,68,68,.1)'};border:1px solid ${ok?'rgba(16,185,129,.25)':'rgba(239,68,68,.25)'};color:${ok?'#a7f3d0':'#fca5a5'}`;
+  if(simState.mode==='oficial') fb.textContent=ok?'✓ Resposta registrada':'✗ Resposta registrada — gabarito ao final';
+  else fb.innerHTML=`<strong>${ok?'✓ Correto!':'✗ Incorreto.'}</strong> ${q.exp}`;
+  document.getElementById('sim-next-btn').style.display='inline-block';
 }
 
-function nextSim() {
-  simState.current++;
-  persistSimState();
-  renderSimQuestion();
-}
+function nextSim(){ simState.current++; renderSimQuestion(); }
 
-function endSimulado() {
+function endSimulado(){
   clearInterval(simState.timer);
-  const total    = DB.simulado.length;
-  const pct      = Math.round(simState.score / total * 100);
-  const approved = pct >= (DB.meta.passingScore || 70);
-
-  clearSimProgress();
-  updateSimStartButton();
-
-  document.getElementById('sim-quiz-area').style.display = 'none';
-  const result = document.getElementById('sim-result-area');
-  result.style.display = 'block';
-  result.innerHTML = `
-    <div style="text-align:center;padding:2rem">
-      <div style="font-size:4rem;margin-bottom:1rem">${approved ? '🎉' : '📚'}</div>
-      <div style="font-family:'Syne',sans-serif;font-size:2rem;font-weight:800;margin-bottom:.5rem">
-        ${simState.score}/${total}
-      </div>
-      <div style="font-size:1.1rem;color:${approved ? 'var(--accent3)' : 'var(--danger)'};margin-bottom:.25rem;font-weight:600">
-        ${approved ? '✓ APROVADO' : '✗ REPROVADO'}
-      </div>
-      <div style="color:var(--muted);font-size:.85rem;margin-bottom:2rem">
-        ${pct}% de acertos · Mínimo: ${DB.meta.passingScore || 70}%
-      </div>
-      <button class="sim-btn sim-btn-primary" onclick="restartSim()" style="font-size:.85rem;padding:.8rem 2rem">
-        ↺ Tentar Novamente
-      </button>
+  const total=simQuestions.length;
+  const pct=Math.round(simState.score/total*100);
+  const passing=DB.meta.passingScore||70;
+  const approved=pct>=passing;
+  const elapsed=Math.floor((Date.now()-simState.startTs)/1000);
+  const timeUsed=`${Math.floor(elapsed/60)}min ${elapsed%60}s`;
+  const byCat={};
+  simState.answers.forEach(a=>{byCat[a.cat]=byCat[a.cat]||{ok:0,total:0}; byCat[a.cat].total++; if(a.correct) byCat[a.cat].ok++;});
+  pushSimHistory({at:Date.now(),mode:simState.mode,modeLabel:simState.modeLabel,score:simState.score,total,pct,passingScore:passing,timeUsed,byCat});
+  const reviewHtml=simState.answers.map((a,i)=>{
+    const q=simQuestions[i]; const ok=a.correct;
+    return `<div class="sim-review-item ${ok?'sim-review-ok':'sim-review-bad'}"><div class="sim-review-num">${i+1}</div><div class="sim-review-body"><div class="sim-review-q">${q.q}</div><div class="sim-review-ans"><strong>Sua resposta:</strong> ${'ABCD'[a.picked]} — ${q.opts[a.picked]}</div>${!ok?`<div class="sim-review-correct"><strong>Correta:</strong> ${'ABCD'[q.correct]} — ${q.opts[q.correct]}</div>`:''}<div class="sim-review-exp">💡 ${q.exp}</div></div></div>`;
+  }).join('');
+  const catStats=Object.entries(byCat).map(([c,v])=>{
+    const p=Math.round(v.ok/v.total*100); const color=p>=70?'#10b981':p>=50?'#fbbf24':'#ef4444';
+    return `<div class="sim-hist-bar-row"><div class="sim-hist-bar-lbl">${CAT_LABELS[c]||c}</div><div class="sim-hist-bar-track"><div class="sim-hist-bar-fill" style="width:${p}%;background:${color}"></div></div><div class="sim-hist-bar-pct">${p}% (${v.ok}/${v.total})</div></div>`;
+  }).join('');
+  document.getElementById('sim-quiz-area').style.display='none';
+  const result=document.getElementById('sim-result-area'); result.style.display='block';
+  result.innerHTML=`
+    <div class="sim-result-hero ${approved?'sim-result-ok':'sim-result-bad'}">
+      <div class="sim-result-emoji">${approved?'🎉':'📚'}</div>
+      <div class="sim-result-score">${simState.score}<span style="opacity:.5">/${total}</span></div>
+      <div class="sim-result-status">${approved?'✓ APROVADO':'✗ REPROVADO'}</div>
+      <div class="sim-result-meta">${pct}% de acertos · Mínimo: ${passing}% · Tempo: ${timeUsed}</div>
+    </div>
+    <div class="concept-card" style="margin-bottom:1.2rem"><div class="concept-title">📊 Desempenho por categoria</div><div class="concept-body" style="padding-top:.5rem"><div class="sim-hist-bars">${catStats}</div></div></div>
+    <div class="concept-card" style="margin-bottom:1.2rem"><div class="concept-title">📋 Revisão das questões (${total})</div><div class="concept-body sim-review-list">${reviewHtml}</div></div>
+    <div style="text-align:center;display:flex;gap:.8rem;justify-content:center;flex-wrap:wrap">
+      <button class="sim-btn sim-btn-primary" onclick="restartSim()" style="font-size:.85rem;padding:.8rem 2rem">↺ Nova Tentativa</button>
+      <button class="sim-btn sim-btn-secondary" onclick="restartSim();simSelectMode('categoria')" style="font-size:.85rem;padding:.8rem 2rem">📚 Treinar tema fraco</button>
     </div>`;
+  result.scrollIntoView({behavior:'smooth'});
 }
 
-function restartSim() {
-  clearInterval(simState.timer);
-  clearSimProgress();
-  updateSimStartButton();
-  document.getElementById('sim-result-area').style.display = 'none';
-  document.getElementById('sim-start-screen').style.display = 'block';
+function restartSim(){
+  clearInterval(simState.timer); clearSimProgress();
+  document.getElementById('sim-result-area').style.display='none';
+  document.getElementById('sim-quiz-area').style.display='none';
+  document.getElementById('sim-start-screen').style.display='block';
+  renderSimHistory(); renderSimCategories();
 }
 
 // ─────────────────────────────────────────────────────
@@ -648,7 +674,7 @@ function restartSim() {
 function renderPlacasGrid(filter) {
   const grid = document.getElementById('placas-grid');
   if (!grid || !DB) return;
-  const list = filter === 'todas' ? DB.placas : DB.placas.filter(p => p.category === filter);
+  const list = filter === 'todas' ? DB.placas : DB.placas.filter(p => (p.category || p.cat) === filter);
   grid.innerHTML = list.map(p => buildSignCard(p)).join('');
 }
 
@@ -1287,6 +1313,12 @@ function tsSpawnVehicle(){
     beltLogged:false,helmetLogged:false,
     // Flash
     violationFlash:0,
+    // Suavização de movimento (aceleração realista)
+    currentSpeedMul:0,
+    targetSpeedMul:1,
+    // Sinaleiros (turn signals)
+    signalSide:0, // -1 esquerda, +1 direita, 0 nenhum
+    signalTimer:0,
   };
   tsVehicles.push(v);
 }
@@ -1302,13 +1334,29 @@ function tsSpawnPedestrian(){
   }else{
     y=cw.y+tsR(0,cw.h);x=cw.x+side*60;dx=-side*.6;dy=0;
   }
-  const colors=isR?['#f97316','#ef4444']:['#22c55e','#4ade80','#86efac','#34d399'];
+  const safeColors=['#2563eb','#0891b2','#7c3aed','#db2777','#16a34a','#0d9488','#9333ea','#0ea5e9','#e11d48','#ca8a04'];
+  const recklessColors=['#f97316','#ef4444','#dc2626','#fbbf24'];
+  const colors=isR?recklessColors:safeColors;
+  const skinTones=['#fde0c4','#f4c69b','#d6a578','#b07b4f','#8c5a3c','#6b4226'];
+  const hairTones=['#1f1f1f','#3b2417','#5a3a22','#a16207','#78350f','#0a0a0a','#404040','#d4d4d4'];
+  const isChild=Math.random()<.18;
+  const useUmbrella=(tsWeather==='rain'||tsWeather==='storm')&&Math.random()<.6;
   tsPedestrians.push({
-    x,y,dx,dy,r:5,color:colors[tsRI(0,colors.length-1)],
+    x,y,dx,dy,
+    r:isChild?3.6:5,
+    color:colors[tsRI(0,colors.length-1)],
+    pantsColor:Math.random()<.6?'#1e293b':'#334155',
+    skin:skinTones[tsRI(0,skinTones.length-1)],
+    hair:hairTones[tsRI(0,hairTones.length-1)],
+    isChild,
+    hasUmbrella:useUmbrella,
+    umbrellaColor:['#dc2626','#1e40af','#16a34a','#0f172a','#7c2d12','#fbbf24'][tsRI(0,5)],
     reckless:isR,crossing:false,alive:true,alpha:1,id:Math.random(),
     dstX:cw.x+(cw.dir==='h'?tsR(0,cw.w):0),
     dstY:cw.y+(cw.dir==='v'?tsR(0,cw.h):0),
     crosswalk:cw,phase:'approach',waitTimer:0,
+    walkPhase:Math.random()*Math.PI*2,
+    facing:Math.atan2(dy,dx)||0,
   });
 }
 
@@ -1460,18 +1508,236 @@ function tsCheckAllRules(v,dt){
   }
 }
 
-// ── Preferência do Pedestre ────────────────────────
+// ── Preferência do Pedestre + Atropelamento Realista ─
 function tsCheckPedestrianRight(v,p){
-  if(!v.alive||!p.alive||!p.crossing||v.isAmbulance)return;
-  if(tsDist(v,p)<28&&!v.stopped){
+  if(!v.alive||!p.alive||p.hit||v.isAmbulance)return;
+  // Verifica colisão mesmo fora da faixa (moto/carro passando por pedestre)
+  const dist = tsDist(v,p);
+  if(dist < 22 && !v.stopped){
     tsTotalAccidents++;
-    tsApplyViolation(v,'PEDESTRIAN_RIGHT','Atropelamento na faixa');
+    tsApplyViolation(v,'PEDESTRIAN_RIGHT','Atropelamento');
     tsSpawnParticle(p.x,p.y,'crash');
-    p.alive=false;
-    v.violationFlash=120;
-    tsShowNotif('💥 ATROPELAMENTO! Pedestre tinha preferência na faixa!','danger');
-    if(tsVoiceEnabled) tsSpeak('Atropelamento na faixa de pedestres. Chame a ambulância!');
+
+    // Pedestre cai no chão — não some imediatamente
+    p.hit = true;
+    p.lying = true;
+    p.alive = true; // continua sendo "vivo" para renderização (deitado)
+    p.dx = 0; p.dy = 0;
+    p.crossing = false; p.phase = 'fallen';
+    p.fallenTimer = 0;        // quanto tempo está deitado
+    p.ambulanceCalled = false;
+    p.callerPed = null;       // pedestre que vai ligar
+
+    v.violationFlash = 180;
+    v.hitPedestrian = true;
+    v.hitPedestrianAt = {x:v.x, y:v.y};
+
+    tsShowNotif('💥 ATROPELAMENTO! Pedestre caiu na via!','danger');
+    if(tsVoiceEnabled) tsSpeak('Atropelamento! Pedestre caiu na via!');
+    tsLog('🚨','ATROPELAMENTO! Pedestre deitado na via. Motorista deve prestar socorro!','danger');
+
+    // Motorista para brevemente (choque)
+    v.stopped = true;
+    v.currentSpeedMul = 0;
+    v.hitStopTimer = tsR(2.5, 5.0); // tempo que o carro fica parado (decide se foge ou socorre)
+
+    // Sortear comportamento do motorista
+    const driverFlees = Math.random() < 0.45; // 45% foge
+    v.driverFlees = driverFlees;
+    v.driverFleeing = false;
+
+    if(!driverFlees){
+      setTimeout(()=>{
+        if(!p.ambulanceCalled){
+          p.ambulanceCalled = true;
+          tsLog('📞','Motorista ligou para o SAMU! Ambulância a caminho.','ok');
+          tsShowNotif('📞 Motorista chamou ambulância (SAMU)!','');
+          if(tsVoiceEnabled) tsSpeak('Motorista chamou a ambulância.');
+          tsSpawnAmbulanceFor(p);
+        }
+      }, (v.hitStopTimer*500));
+    }
   }
+}
+
+// ── Spawn ambulância para socorrer pedestre ───────
+function tsSpawnAmbulanceFor(targetPed){
+  // Ambulância entra pela borda mais próxima
+  const edge = Math.random() < 0.5 ? 'left' : 'top';
+  let ax,ay,adx,ady;
+  if(edge==='left'){ax=-60;ay=targetPed.y;adx=1;ady=0;}
+  else{ax=targetPed.x;ay=-60;adx=0;ady=1;}
+
+  const amb = {
+    x:ax,y:ay,dx:adx,dy:ady,
+    angle:Math.atan2(ady,adx),
+    speed:1.9,type:'ambulance',color:'#f8fafc',origColor:'#f8fafc',
+    label:'Ambulância',plateNum:'SAMU-'+tsRI(100,999),
+    alive:true,alpha:1,horiz:adx!==0,roadRef:null,speedLimit:120,id:Math.random(),
+    isAmbulance:true,
+    drunk:false,speederLvl:'none',redRunner:false,noHelmet:false,
+    noBelt:false,noLight:false,cellphone:false,wrongWay:false,
+    stopped:false,brakeLights:false,parkTimer:0,hasFarol:true,
+    wobble:0,wobblePhase:0,
+    violations:[],points:0,lastViolation:null,violationFlash:0,
+    frontVehicle:null,frontDist:999,unsafeDistTimer:0,
+    cellphoneLogged:false,speedBumpLogged:false,schoolZoneLogged:false,
+    noLightLogged:false,wrongWayLogged:false,beltLogged:false,helmetLogged:false,
+    currentSpeedMul:1,targetSpeedMul:1,signalSide:0,signalTimer:0,
+    targetPed: targetPed,
+    isMission: true,
+  };
+  tsVehicles.push(amb);
+  tsLog('🚑','Ambulância SAMU despachada! Sirene ativa.','ok');
+}
+
+// ── Spawn viatura policial para perseguir fugitivo ─
+function tsSpawnPoliceFor(targetVehicle){
+  const edge = Math.random() < 0.5 ? 'right' : 'bottom';
+  let px,py,pdx,pdy;
+  if(edge==='right'){px=tsW+60;py=targetVehicle.y;pdx=-1;pdy=0;}
+  else{px=targetVehicle.x;py=tsH+60;pdx=0;pdy=-1;}
+
+  const police = {
+    x:px,y:py,dx:pdx,dy:pdy,
+    angle:Math.atan2(pdy,pdx),
+    speed:1.8,type:'police',color:'#1d4ed8',origColor:'#1d4ed8',
+    label:'Polícia',plateNum:'PM-'+tsRI(1000,9999),
+    alive:true,alpha:1,horiz:pdx!==0,roadRef:null,speedLimit:120,id:Math.random(),
+    isAmbulance:false,isPolice:true,
+    drunk:false,speederLvl:'none',redRunner:false,noHelmet:false,
+    noBelt:false,noLight:false,cellphone:false,wrongWay:false,
+    stopped:false,brakeLights:false,parkTimer:0,hasFarol:true,
+    wobble:0,wobblePhase:0,
+    violations:[],points:0,lastViolation:null,violationFlash:0,
+    frontVehicle:null,frontDist:999,unsafeDistTimer:0,
+    cellphoneLogged:false,speedBumpLogged:false,schoolZoneLogged:false,
+    noLightLogged:false,wrongWayLogged:false,beltLogged:false,helmetLogged:false,
+    currentSpeedMul:1,targetSpeedMul:1,signalSide:0,signalTimer:0,
+    pursueTarget: targetVehicle,
+    isMission: true,
+  };
+  tsVehicles.push(police);
+  tsLog('🚔','POLÍCIA despachada! Perseguição ao motorista fugitivo!','danger');
+  tsShowNotif('🚔 Viatura policial despachada! Perseguição iniciada!','danger');
+  if(tsVoiceEnabled) tsSpeak('Viatura policial em perseguição ao motorista fugitivo!');
+}
+
+// ── Atualiza comportamentos pós-atropelamento ──────
+function tsUpdateAccidentBehaviors(dt){
+  // Atualiza pedestres deitados
+  tsPedestrians.forEach(p=>{
+    if(!p.hit||!p.lying)return;
+    p.fallenTimer = (p.fallenTimer||0) + dt*tsSpeedMult;
+
+    // Se ambulância chamada e chegou perto, pedestre some (socorrido)
+    if(p.ambulanceCalled){
+      const nearAmb = tsVehicles.find(v=>v.isAmbulance&&v.isMission&&v.targetPed===p&&tsDist(v,p)<40);
+      if(nearAmb){
+        tsLog('🏥','Pedestre socorrido! Ambulância transportando para hospital.','ok');
+        tsShowNotif('🏥 Pedestre socorrido pela ambulância!','');
+        p.alive = false;
+        nearAmb.isMission = false;
+        nearAmb.targetPed = null;
+      }
+    }
+
+    // Se nenhum pedestre ao redor ligou e não foi chamada ainda, após 5s
+    // outro pedestre testemunha liga
+    if(!p.ambulanceCalled && p.fallenTimer > 5){
+      const witness = tsPedestrians.find(q=>q!==p&&q.alive&&!q.hit&&tsDist(q,p)<120);
+      if(witness){
+        p.ambulanceCalled = true;
+        p.callerPed = witness;
+        tsLog('📱','Pedestre testemunha ligou para o SAMU!','ok');
+        tsShowNotif('📱 Testemunha chamou ambulância pelo celular!','');
+        if(tsVoiceEnabled) tsSpeak('Uma testemunha chamou a ambulância.');
+        tsSpawnAmbulanceFor(p);
+      } else if(p.fallenTimer > 10){
+        // Sem testemunha — demora mais mas liga de qualquer forma
+        p.ambulanceCalled = true;
+        tsLog('📞','Alguém passou e chamou o socorro!','ok');
+        tsSpawnAmbulanceFor(p);
+      }
+    }
+  });
+
+  // Atualiza veículos com hitStopTimer (motorista decidindo o que fazer)
+  tsVehicles.forEach(v=>{
+    if(!v.hitPedestrian||v.driverFleeing)return;
+    if(v.hitStopTimer > 0){
+      v.hitStopTimer -= dt*tsSpeedMult;
+      v.stopped = true; v.currentSpeedMul = 0;
+    } else if(v.driverFlees && !v.driverFleeing){
+      // Motorista foge!
+      v.driverFleeing = true;
+      v.stopped = false;
+      v.targetSpeedMul = 1;
+      v.speederLvl = 'heavy'; // acelera para fugir
+      v.color = '#b91c1c';
+      v.violationFlash = 240;
+      tsLog('🏃','MOTORISTA FUGIU do local! Cometeu crime de fuga (Art. 305 CTB)!','danger');
+      tsShowNotif('🏃 Motorista fugiu! Crime de fuga — Art. 305 CTB. Polícia acionada!','danger');
+      if(tsVoiceEnabled) tsSpeak('Motorista fugiu do local. A polícia foi acionada!');
+
+      // Verificar se tem viatura próxima ou chamar nova
+      const nearPolice = tsVehicles.find(vv=>vv.isPolice&&tsDist(vv,v)<250);
+      if(nearPolice){
+        nearPolice.pursueTarget = v;
+        tsLog('🚔','Viatura próxima iniciou perseguição imediata!','danger');
+      } else {
+        // Pedestre testemunha liga para polícia
+        const witness = tsPedestrians.find(q=>q.alive&&!q.hit&&tsDist(q,v)<150);
+        if(witness){
+          setTimeout(()=>tsSpawnPoliceFor(v), 2000);
+          tsLog('📱','Testemunha ligou para a polícia reportando o fugitivo!','warn');
+        } else {
+          setTimeout(()=>tsSpawnPoliceFor(v), 4000);
+          tsLog('📞','Polícia foi acionada via central!','warn');
+        }
+      }
+    }
+  });
+
+  // Ambulâncias em missão: navegar até pedestre
+  tsVehicles.forEach(v=>{
+    if(!v.isAmbulance||!v.isMission||!v.targetPed)return;
+    const tp = v.targetPed;
+    if(!tp.alive&&!tp.lying){v.isMission=false;return;}
+    // Navegar em direção ao pedestre
+    const ddx = tp.x - v.x, ddy = tp.y - v.y;
+    const d = Math.hypot(ddx,ddy);
+    if(d > 30){
+      const norm = 1/d;
+      v.dx = ddx*norm; v.dy = ddy*norm;
+      v.angle = Math.atan2(v.dy,v.dx);
+      v.horiz = Math.abs(v.dx) > Math.abs(v.dy);
+    }
+  });
+
+  // Viaturas policiais em perseguição: navegar até alvo
+  tsVehicles.forEach(v=>{
+    if(!v.isPolice||!v.pursueTarget)return;
+    const t = v.pursueTarget;
+    if(!t.alive){v.pursueTarget=null;return;}
+    const ddx = t.x - v.x, ddy = t.y - v.y;
+    const d = Math.hypot(ddx,ddy);
+    if(d < 18){
+      // Capturou o veículo!
+      tsLog('🚔','MOTORISTA CAPTURADO! Crime de fuga resulta em prisão em flagrante!','ok');
+      tsShowNotif('🚔 Motorista capturado pela polícia!','');
+      if(tsVoiceEnabled) tsSpeak('Motorista capturado! Prisão em flagrante.');
+      t.stopped=true; t.currentSpeedMul=0; t.alive=false; // removido da simulação
+      v.pursueTarget=null;
+      v.isMission=false;
+    } else if(d>30){
+      const norm = 1/d;
+      v.dx = ddx*norm; v.dy = ddy*norm;
+      v.angle = Math.atan2(v.dy,v.dx);
+      v.horiz = Math.abs(v.dx) > Math.abs(v.dy);
+      v.speed = 2.1; // mais rápido que fugitivo
+    }
+  });
 }
 
 // ── Velocidade real em km/h ────────────────────────
@@ -1528,39 +1794,114 @@ function tsDrawRoads(){
   const W=tsW,H=tsH;
   const wet=tsWeather==='rain'||tsWeather==='storm';
   const isN=tsTimeOfDay==='night';
-  const asp=isN?(wet?'#1a2530':'#1a1a1a'):(wet?'#1e2a35':'#2a2a2a');
+  const isDk=tsTimeOfDay==='dusk'||tsTimeOfDay==='dawn';
+  // Asfalto base + variação
+  const asp=isN?(wet?'#1a2530':'#1e1e22'):(wet?'#1e2a35':'#2e2e32');
+  const aspDk=isN?'#0f161c':'#26262a';
+
+  const drawSidewalkH = (r, rw)=>{
+    // Calçada superior e inferior
+    const sw = 9;
+    const sidewalkColor = isN?'#3a3a40':'#aab0b6';
+    const curbColor = isN?'#1a1a20':'#7a808a';
+    tsCtx.fillStyle = sidewalkColor;
+    tsCtx.fillRect(0, r.y - rw/2 - sw, W, sw);
+    tsCtx.fillRect(0, r.y + rw/2,       W, sw);
+    // Meio-fio (curb)
+    tsCtx.fillStyle = curbColor;
+    tsCtx.fillRect(0, r.y - rw/2 - 2, W, 2);
+    tsCtx.fillRect(0, r.y + rw/2,     W, 2);
+    // Texturinha de calçada (linhas)
+    tsCtx.strokeStyle = isN?'#22262c':'#8a9098';
+    tsCtx.lineWidth = 0.8;
+    for(let x=0; x<W; x+=22){
+      tsCtx.beginPath(); tsCtx.moveTo(x, r.y - rw/2 - sw); tsCtx.lineTo(x, r.y - rw/2 - 2); tsCtx.stroke();
+      tsCtx.beginPath(); tsCtx.moveTo(x, r.y + rw/2 + 2); tsCtx.lineTo(x, r.y + rw/2 + sw); tsCtx.stroke();
+    }
+  };
+  const drawSidewalkV = (r, rw)=>{
+    const sw = 9;
+    const sidewalkColor = isN?'#3a3a40':'#aab0b6';
+    const curbColor = isN?'#1a1a20':'#7a808a';
+    tsCtx.fillStyle = sidewalkColor;
+    tsCtx.fillRect(r.x - rw/2 - sw, 0, sw, H);
+    tsCtx.fillRect(r.x + rw/2,       0, sw, H);
+    tsCtx.fillStyle = curbColor;
+    tsCtx.fillRect(r.x - rw/2 - 2, 0, 2, H);
+    tsCtx.fillRect(r.x + rw/2,     0, 2, H);
+    tsCtx.strokeStyle = isN?'#22262c':'#8a9098';
+    tsCtx.lineWidth = 0.8;
+    for(let y=0; y<H; y+=22){
+      tsCtx.beginPath(); tsCtx.moveTo(r.x - rw/2 - sw, y); tsCtx.lineTo(r.x - rw/2 - 2, y); tsCtx.stroke();
+      tsCtx.beginPath(); tsCtx.moveTo(r.x + rw/2 + 2, y); tsCtx.lineTo(r.x + rw/2 + sw, y); tsCtx.stroke();
+    }
+  };
 
   const drawH=r=>{
     const rw=r.laneW*r.lanes*2;
-    tsCtx.fillStyle='rgba(0,0,0,.28)';tsCtx.fillRect(0,r.y-rw/2+2,W,rw);
-    tsCtx.fillStyle=asp;tsCtx.fillRect(0,r.y-rw/2,W,rw);
+    drawSidewalkH(r, rw);
+    // Sombra abaixo da via
+    tsCtx.fillStyle='rgba(0,0,0,.35)'; tsCtx.fillRect(0,r.y-rw/2+2,W,rw);
+    // Asfalto com gradiente
+    const ag = tsCtx.createLinearGradient(0, r.y-rw/2, 0, r.y+rw/2);
+    ag.addColorStop(0, aspDk); ag.addColorStop(.5, asp); ag.addColorStop(1, aspDk);
+    tsCtx.fillStyle = ag; tsCtx.fillRect(0,r.y-rw/2,W,rw);
+    // Reflexos molhados
     if(wet){
       const g=tsCtx.createLinearGradient(0,r.y-rw/2,0,r.y+rw/2);
-      g.addColorStop(0,'rgba(100,160,200,.04)');g.addColorStop(.5,'rgba(100,160,200,.1)');g.addColorStop(1,'rgba(100,160,200,.04)');
+      g.addColorStop(0,'rgba(120,180,220,.06)');
+      g.addColorStop(.5,'rgba(140,200,240,.16)');
+      g.addColorStop(1,'rgba(120,180,220,.06)');
       tsCtx.fillStyle=g;tsCtx.fillRect(0,r.y-rw/2,W,rw);
     }
-    tsCtx.setLineDash([18,12]);tsCtx.strokeStyle=wet?'#fbbf2430':'#fbbf2455';tsCtx.lineWidth=1.5;
-    tsCtx.beginPath();tsCtx.moveTo(0,r.y);tsCtx.lineTo(W,r.y);tsCtx.stroke();
+    // Linha central amarela (contínua dupla mais visível)
     tsCtx.setLineDash([]);
-    tsCtx.strokeStyle='#ffffff30';tsCtx.lineWidth=1.2;
-    tsCtx.beginPath();tsCtx.moveTo(0,r.y-rw/2);tsCtx.lineTo(W,r.y-rw/2);tsCtx.stroke();
-    tsCtx.beginPath();tsCtx.moveTo(0,r.y+rw/2);tsCtx.lineTo(W,r.y+rw/2);tsCtx.stroke();
+    tsCtx.strokeStyle = isN?'#d4a017':'#fbbf24';
+    tsCtx.lineWidth = 1.6;
+    tsCtx.beginPath(); tsCtx.moveTo(0, r.y-1.6); tsCtx.lineTo(W, r.y-1.6); tsCtx.stroke();
+    tsCtx.beginPath(); tsCtx.moveTo(0, r.y+1.6); tsCtx.lineTo(W, r.y+1.6); tsCtx.stroke();
+    // Faixas brancas tracejadas separando faixas dentro da pista
+    tsCtx.setLineDash([22,14]);
+    tsCtx.strokeStyle = isN?'#d0d4dc99':'#ffffffcc';
+    tsCtx.lineWidth = 1.4;
+    tsCtx.beginPath(); tsCtx.moveTo(0, r.y - r.laneW); tsCtx.lineTo(W, r.y - r.laneW); tsCtx.stroke();
+    tsCtx.beginPath(); tsCtx.moveTo(0, r.y + r.laneW); tsCtx.lineTo(W, r.y + r.laneW); tsCtx.stroke();
+    tsCtx.setLineDash([]);
+    // Linha branca contínua da borda (acostamento)
+    tsCtx.strokeStyle = isN?'#bbbbbb88':'#ffffffaa';
+    tsCtx.lineWidth = 1.2;
+    tsCtx.beginPath(); tsCtx.moveTo(0, r.y-rw/2+1.5); tsCtx.lineTo(W, r.y-rw/2+1.5); tsCtx.stroke();
+    tsCtx.beginPath(); tsCtx.moveTo(0, r.y+rw/2-1.5); tsCtx.lineTo(W, r.y+rw/2-1.5); tsCtx.stroke();
   };
   const drawV=r=>{
     const rw=r.laneW*r.lanes*2;
-    tsCtx.fillStyle='rgba(0,0,0,.25)';tsCtx.fillRect(r.x-rw/2+2,0,rw,H);
-    tsCtx.fillStyle=asp;tsCtx.fillRect(r.x-rw/2,0,rw,H);
+    drawSidewalkV(r, rw);
+    tsCtx.fillStyle='rgba(0,0,0,.32)'; tsCtx.fillRect(r.x-rw/2+2,0,rw,H);
+    const ag = tsCtx.createLinearGradient(r.x-rw/2, 0, r.x+rw/2, 0);
+    ag.addColorStop(0, aspDk); ag.addColorStop(.5, asp); ag.addColorStop(1, aspDk);
+    tsCtx.fillStyle = ag; tsCtx.fillRect(r.x-rw/2,0,rw,H);
     if(wet){
       const g=tsCtx.createLinearGradient(r.x-rw/2,0,r.x+rw/2,0);
-      g.addColorStop(0,'rgba(100,160,200,.04)');g.addColorStop(.5,'rgba(100,160,200,.1)');g.addColorStop(1,'rgba(100,160,200,.04)');
+      g.addColorStop(0,'rgba(120,180,220,.06)');
+      g.addColorStop(.5,'rgba(140,200,240,.16)');
+      g.addColorStop(1,'rgba(120,180,220,.06)');
       tsCtx.fillStyle=g;tsCtx.fillRect(r.x-rw/2,0,rw,H);
     }
-    tsCtx.setLineDash([18,12]);tsCtx.strokeStyle=wet?'#fbbf2430':'#fbbf2455';tsCtx.lineWidth=1.5;
-    tsCtx.beginPath();tsCtx.moveTo(r.x,0);tsCtx.lineTo(r.x,H);tsCtx.stroke();
     tsCtx.setLineDash([]);
-    tsCtx.strokeStyle='#ffffff30';tsCtx.lineWidth=1.2;
-    tsCtx.beginPath();tsCtx.moveTo(r.x-rw/2,0);tsCtx.lineTo(r.x-rw/2,H);tsCtx.stroke();
-    tsCtx.beginPath();tsCtx.moveTo(r.x+rw/2,0);tsCtx.lineTo(r.x+rw/2,H);tsCtx.stroke();
+    tsCtx.strokeStyle = isN?'#d4a017':'#fbbf24';
+    tsCtx.lineWidth = 1.6;
+    tsCtx.beginPath(); tsCtx.moveTo(r.x-1.6, 0); tsCtx.lineTo(r.x-1.6, H); tsCtx.stroke();
+    tsCtx.beginPath(); tsCtx.moveTo(r.x+1.6, 0); tsCtx.lineTo(r.x+1.6, H); tsCtx.stroke();
+    tsCtx.setLineDash([22,14]);
+    tsCtx.strokeStyle = isN?'#d0d4dc99':'#ffffffcc';
+    tsCtx.lineWidth = 1.4;
+    tsCtx.beginPath(); tsCtx.moveTo(r.x - r.laneW, 0); tsCtx.lineTo(r.x - r.laneW, H); tsCtx.stroke();
+    tsCtx.beginPath(); tsCtx.moveTo(r.x + r.laneW, 0); tsCtx.lineTo(r.x + r.laneW, H); tsCtx.stroke();
+    tsCtx.setLineDash([]);
+    tsCtx.strokeStyle = isN?'#bbbbbb88':'#ffffffaa';
+    tsCtx.lineWidth = 1.2;
+    tsCtx.beginPath(); tsCtx.moveTo(r.x-rw/2+1.5, 0); tsCtx.lineTo(r.x-rw/2+1.5, H); tsCtx.stroke();
+    tsCtx.beginPath(); tsCtx.moveTo(r.x+rw/2-1.5, 0); tsCtx.lineTo(r.x+rw/2-1.5, H); tsCtx.stroke();
   };
 
   tsRoads.h.forEach(drawH);
@@ -1568,23 +1909,38 @@ function tsDrawRoads(){
 
   if(tsRoads.highway){
     const hw=tsRoads.highway;const hwW=hw.laneW*hw.lanes*2;
-    tsCtx.fillStyle=isN?'#111':'#1e1e1e';tsCtx.fillRect(hw.x-hwW/2,0,hwW,H);
-    tsCtx.strokeStyle='#fff5';tsCtx.lineWidth=1.8;
-    tsCtx.beginPath();tsCtx.moveTo(hw.x-hwW/2,0);tsCtx.lineTo(hw.x-hwW/2,H);tsCtx.stroke();
-    tsCtx.beginPath();tsCtx.moveTo(hw.x+hwW/2,0);tsCtx.lineTo(hw.x+hwW/2,H);tsCtx.stroke();
-    tsCtx.strokeStyle='#fbbf2488';tsCtx.lineWidth=2;tsCtx.setLineDash([]);
-    tsCtx.beginPath();tsCtx.moveTo(hw.x,0);tsCtx.lineTo(hw.x,H);tsCtx.stroke();
-    tsCtx.setLineDash([22,13]);tsCtx.strokeStyle='#fff4';tsCtx.lineWidth=1.2;
+    // Acostamento da rodovia (mais escuro)
+    tsCtx.fillStyle = isN?'#0a0d12':'#3a3a40';
+    tsCtx.fillRect(hw.x-hwW/2-6, 0, 6, H);
+    tsCtx.fillRect(hw.x+hwW/2,   0, 6, H);
+    // Asfalto
+    const ag = tsCtx.createLinearGradient(hw.x-hwW/2, 0, hw.x+hwW/2, 0);
+    ag.addColorStop(0, isN?'#0a0d12':'#1a1a1d');
+    ag.addColorStop(.5, isN?'#15181e':'#26262a');
+    ag.addColorStop(1, isN?'#0a0d12':'#1a1a1d');
+    tsCtx.fillStyle = ag;
+    tsCtx.fillRect(hw.x-hwW/2,0,hwW,H);
+    // Linha branca de borda
+    tsCtx.strokeStyle='#ffffffcc';tsCtx.lineWidth=1.6;
+    tsCtx.beginPath();tsCtx.moveTo(hw.x-hwW/2+1.5,0);tsCtx.lineTo(hw.x-hwW/2+1.5,H);tsCtx.stroke();
+    tsCtx.beginPath();tsCtx.moveTo(hw.x+hwW/2-1.5,0);tsCtx.lineTo(hw.x+hwW/2-1.5,H);tsCtx.stroke();
+    // Linha central amarela dupla
+    tsCtx.strokeStyle='#fbbf24';tsCtx.lineWidth=1.8;tsCtx.setLineDash([]);
+    tsCtx.beginPath();tsCtx.moveTo(hw.x-2,0);tsCtx.lineTo(hw.x-2,H);tsCtx.stroke();
+    tsCtx.beginPath();tsCtx.moveTo(hw.x+2,0);tsCtx.lineTo(hw.x+2,H);tsCtx.stroke();
+    // Tracejadas entre faixas
+    tsCtx.setLineDash([26,16]);tsCtx.strokeStyle='#ffffff99';tsCtx.lineWidth=1.3;
     [-hw.laneW/2,hw.laneW/2].forEach(off=>{tsCtx.beginPath();tsCtx.moveTo(hw.x+off,0);tsCtx.lineTo(hw.x+off,H);tsCtx.stroke();});
     tsCtx.setLineDash([]);
-    tsDrawSpeedSign(hw.x+30,H*.12,'110');tsDrawSpeedSign(hw.x+30,H*.62,'110');
-    tsCtx.fillStyle='#ffffff25';tsCtx.font='bold 7px DM Mono,monospace';tsCtx.textAlign='center';
+    tsDrawSpeedSign(hw.x+30,H*.12,'110');
+    tsDrawSpeedSign(hw.x+30,H*.62,'110');
+    tsCtx.fillStyle='#ffffff22';tsCtx.font='bold 8px DM Mono,monospace';tsCtx.textAlign='center';
     tsCtx.fillText('RODOVIA',hw.x,H*.35);
   }
 
-  // Speed signs on urban roads
+  // Placas urbanas
   tsRoads.h.forEach((r,i)=>{
-    if(i===0) tsDrawSpeedSign(W*.08,r.y-r.laneW*r.lanes-10,'60');
+    if(i===0) tsDrawSpeedSign(W*.08,r.y-r.laneW*r.lanes-14,'60');
   });
 }
 
@@ -1637,20 +1993,30 @@ function tsDrawSpeedBumps(){
 
 function tsDrawCrosswalks(){
   tsCrosswalks.forEach(cw=>{
-    const n=4;
-    const sw=cw.dir==='h'?cw.w/n:7;
-    const sh=cw.dir==='h'?7:cw.h/n;
     const activePed=tsPedestrians.find(p=>p.alive&&p.crosswalk===cw&&p.phase==='cross');
-    if(activePed){tsCtx.shadowColor='#fbbf24';tsCtx.shadowBlur=10;}
-    tsCtx.fillStyle='#fbbf24cc';
-    for(let i=0;i<n;i+=2){
-      tsCtx.fillRect(
-        cw.x+(cw.dir==='h'?i*sw:0),
-        cw.y+(cw.dir==='v'?i*sh:0),
-        sw,sh
-      );
+    if(activePed){ tsCtx.shadowColor='#fde047'; tsCtx.shadowBlur=14; }
+    // Faixa de pedestre estilo "zebra" branca real (5-6 listras grossas)
+    tsCtx.fillStyle = '#f8fafc';
+    if(cw.dir==='h'){
+      const stripeCount = 6;
+      const gap = cw.w / (stripeCount*2 - 1);
+      for(let i=0;i<stripeCount;i++){
+        tsCtx.fillRect(cw.x + i*gap*2, cw.y - 1, gap, cw.h + 2);
+      }
+    } else {
+      const stripeCount = 6;
+      const gap = cw.h / (stripeCount*2 - 1);
+      for(let i=0;i<stripeCount;i++){
+        tsCtx.fillRect(cw.x - 1, cw.y + i*gap*2, cw.w + 2, gap);
+      }
     }
     tsCtx.shadowBlur=0;
+    // Brilho amarelo em torno quando pedestre está atravessando
+    if(activePed){
+      tsCtx.strokeStyle = 'rgba(253,224,71,.7)';
+      tsCtx.lineWidth = 1.5;
+      tsCtx.strokeRect(cw.x - 2, cw.y - 2, cw.w + 4, cw.h + 4);
+    }
   });
 }
 
@@ -1675,34 +2041,93 @@ function tsDrawZones(){
 
 function tsDrawTrafficLights(){
   tsTrafficLights.forEach(tl=>{
-    const sz=10;
-    // Poste
-    tsCtx.strokeStyle='#555';tsCtx.lineWidth=2;
-    tsCtx.beginPath();tsCtx.moveTo(tl.x,tl.y);tsCtx.lineTo(tl.x,tl.y-sz*4);tsCtx.stroke();
-    // Caixa
-    tsCtx.fillStyle='#1a1a1a';tsCtx.strokeStyle='#333';tsCtx.lineWidth=1;
-    tsCtx.beginPath();tsCtx.roundRect(tl.x-sz/2-3,tl.y-sz*3.5-5,sz+6,sz*3.5+6,3);
-    tsCtx.fill();tsCtx.stroke();
-    // Lâmpadas
-    const colMap={green:['#1a0000','#1a1000','#22c55e'],yellow:['#1a0000','#fbbf24','#001a00'],red:['#ef4444','#1a1000','#001a00']};
-    const glow={green:'#22c55e',yellow:'#fbbf24',red:'#ef4444'};
-    colMap[tl.state].forEach((c,i)=>{
-      const lit=c!=='#1a0000'&&c!=='#1a1000'&&c!=='#001a00';
-      if(lit){tsCtx.shadowColor=glow[tl.state];tsCtx.shadowBlur=14;}
-      tsCtx.fillStyle=c;
-      tsCtx.beginPath();tsCtx.arc(tl.x,tl.y-sz*(2.8-i)-2,sz/2,0,Math.PI*2);tsCtx.fill();
-      tsCtx.shadowBlur=0;
-    });
-    // Contagem regressiva
-    tsCtx.fillStyle='#ffffff66';tsCtx.font='bold 6px DM Mono,monospace';
-    tsCtx.textAlign='center';tsCtx.textBaseline='middle';
-    tsCtx.fillText(Math.ceil(tl.countdown)||'',tl.x,tl.y-sz*2+3);
-    // Halo noturno
-    if(tsTimeOfDay==='night'||tsTimeOfDay==='dawn'){
-      const hc=tl.state==='green'?'#22c55e':tl.state==='yellow'?'#fbbf24':'#ef4444';
-      const grd=tsCtx.createRadialGradient(tl.x,tl.y-sz,0,tl.x,tl.y-sz,55);
-      grd.addColorStop(0,hc+'33');grd.addColorStop(1,'transparent');
-      tsCtx.fillStyle=grd;tsCtx.fillRect(tl.x-55,tl.y-sz*4,110,sz*4+55);
+    const sz=11;
+    const isN=tsTimeOfDay==='night'||tsTimeOfDay==='dawn';
+    // Poste com gradiente metálico
+    const postGrad = tsCtx.createLinearGradient(tl.x-2,0,tl.x+2,0);
+    postGrad.addColorStop(0,'#3a3a3a');
+    postGrad.addColorStop(.5,'#6a6a6a');
+    postGrad.addColorStop(1,'#3a3a3a');
+    tsCtx.fillStyle = postGrad;
+    tsCtx.fillRect(tl.x-1.5, tl.y-sz*4, 3, sz*4);
+    // Base do poste
+    tsCtx.fillStyle = '#2a2a2a';
+    tsCtx.beginPath(); tsCtx.ellipse(tl.x, tl.y, 5, 2, 0, 0, Math.PI*2); tsCtx.fill();
+    // Caixa do semáforo (corpo)
+    const boxX = tl.x - sz/2 - 4;
+    const boxY = tl.y - sz*3.6 - 6;
+    const boxW = sz + 8;
+    const boxH = sz*3.4 + 8;
+    // Sombra
+    tsCtx.fillStyle = 'rgba(0,0,0,.5)';
+    tsCtx.beginPath(); tsCtx.roundRect(boxX+2, boxY+2, boxW, boxH, 4); tsCtx.fill();
+    // Corpo
+    const bodyGrad = tsCtx.createLinearGradient(boxX, boxY, boxX+boxW, boxY);
+    bodyGrad.addColorStop(0,'#0a0a0a');
+    bodyGrad.addColorStop(.5,'#1f1f1f');
+    bodyGrad.addColorStop(1,'#0a0a0a');
+    tsCtx.fillStyle = bodyGrad;
+    tsCtx.strokeStyle = '#444';
+    tsCtx.lineWidth = 1;
+    tsCtx.beginPath(); tsCtx.roundRect(boxX, boxY, boxW, boxH, 4); tsCtx.fill(); tsCtx.stroke();
+
+    // Lâmpadas (3 círculos)
+    const colMap = {
+      green:  ['off','off','green'],
+      yellow: ['off','yellow','off'],
+      red:    ['red','off','off'],
+    };
+    const lampColors = { red:'#ef4444', yellow:'#fbbf24', green:'#22c55e' };
+    const offColor = '#1a1a1a';
+    const states = colMap[tl.state];
+    for(let i=0;i<3;i++){
+      const cy = tl.y - sz*(2.8 - i) - 2;
+      const isLit = states[i] !== 'off';
+      const c = isLit ? lampColors[states[i]] : offColor;
+      // Viseira (sombrinha) acima de cada lâmpada
+      tsCtx.fillStyle = '#0a0a0a';
+      tsCtx.beginPath();
+      tsCtx.moveTo(tl.x - sz/2 - 2, cy - sz/2 - 1);
+      tsCtx.lineTo(tl.x + sz/2 + 2, cy - sz/2 - 1);
+      tsCtx.lineTo(tl.x + sz/2 + 1, cy - sz/2 - 3);
+      tsCtx.lineTo(tl.x - sz/2 - 1, cy - sz/2 - 3);
+      tsCtx.closePath(); tsCtx.fill();
+      // Halo (apenas lâmpada acesa)
+      if(isLit){
+        tsCtx.shadowColor = lampColors[states[i]];
+        tsCtx.shadowBlur = 16;
+      }
+      // Lâmpada
+      tsCtx.fillStyle = c;
+      tsCtx.beginPath(); tsCtx.arc(tl.x, cy, sz/2, 0, Math.PI*2); tsCtx.fill();
+      // Reflexo brilhante
+      if(isLit){
+        tsCtx.fillStyle = 'rgba(255,255,255,.55)';
+        tsCtx.beginPath(); tsCtx.arc(tl.x - sz*.18, cy - sz*.18, sz*.18, 0, Math.PI*2); tsCtx.fill();
+      }
+      tsCtx.shadowBlur = 0;
+      // Borda escura
+      tsCtx.strokeStyle = '#2a2a2a';
+      tsCtx.lineWidth = 1;
+      tsCtx.beginPath(); tsCtx.arc(tl.x, cy, sz/2, 0, Math.PI*2); tsCtx.stroke();
+    }
+
+    // Contagem regressiva pequena abaixo
+    tsCtx.fillStyle = '#ffffff88';
+    tsCtx.font = 'bold 7px DM Mono,monospace';
+    tsCtx.textAlign = 'center'; tsCtx.textBaseline = 'middle';
+    if(tl.countdown){
+      tsCtx.fillText(Math.ceil(tl.countdown), tl.x, tl.y - 4);
+    }
+
+    // Halo grande à noite
+    if(isN){
+      const hc = tl.state==='green' ? '#22c55e' : tl.state==='yellow' ? '#fbbf24' : '#ef4444';
+      const grd = tsCtx.createRadialGradient(tl.x, tl.y - sz*2, 0, tl.x, tl.y - sz*2, 65);
+      grd.addColorStop(0, hc + '33');
+      grd.addColorStop(1, 'transparent');
+      tsCtx.fillStyle = grd;
+      tsCtx.fillRect(tl.x - 65, tl.y - sz*4 - 10, 130, sz*4 + 75);
     }
   });
 }
@@ -1726,160 +2151,691 @@ function tsDrawBuildings(){
 }
 
 function tsDrawVehicle(v){
-  if(!v.alive)return;
+  if(!v.alive) return;
   tsCtx.save();
-  tsCtx.globalAlpha=v.alpha;
-  const isSel=tsSelectedVehicle&&tsSelectedVehicle.id===v.id;
-  const isHov=tsHoveredVehicle&&tsHoveredVehicle.id===v.id;
-  tsCtx.translate(v.x,v.y);
-  const angle = v.angle || Math.atan2(v.dy,v.dx);
-  tsCtx.rotate(angle + (v.drunk ? Math.sin(Date.now()*.008)*.15 : 0));
+  tsCtx.globalAlpha = v.alpha;
+  const isSel = tsSelectedVehicle && tsSelectedVehicle.id === v.id;
+  const isHov = tsHoveredVehicle && tsHoveredVehicle.id === v.id;
+  tsCtx.translate(v.x, v.y);
+  const angle = v.angle || Math.atan2(v.dy, v.dx);
+  // Adicionar inclinação do veículo bêbado e leve roll do volante em curvas
+  const rotExtra = (v.drunk ? Math.sin(Date.now()*.008)*.15 : 0);
+  tsCtx.rotate(angle + Math.PI/2 + rotExtra); // +PI/2: corpo "vertical" alinhado ao movimento
 
-  let cw,ch;
-  switch(v.type){case 'moto':cw=7;ch=17;break;case 'bus':cw=24;ch=52;break;case 'truck':cw=22;ch=46;break;case 'ambulance':cw=20;ch=40;break;default:cw=17;ch=32;}
+  let cw, ch;
+  switch(v.type){
+    case 'moto':      cw=8;  ch=18; break;
+    case 'bus':       cw=22; ch=58; break;
+    case 'truck':     cw=22; ch=50; break;
+    case 'ambulance': cw=20; ch=44; break;
+    case 'police':    cw=18; ch=34; break;
+    default:          cw=18; ch=34; // car / taxi
+  }
 
-  // Sombra
-  tsCtx.fillStyle='rgba(0,0,0,.4)';
-  tsCtx.beginPath();tsCtx.ellipse(2,3,cw*.7,ch*.35,0,0,Math.PI*2);tsCtx.fill();
+  // Sombra projetada (direção depende da hora)
+  const shadowOffsetX = (tsTimeOfDay==='dawn'?-3 : tsTimeOfDay==='dusk'?3 : 1);
+  const shadowOffsetY = (tsTimeOfDay==='night'?2 : 4);
+  tsCtx.fillStyle = 'rgba(0,0,0,.45)';
+  tsCtx.beginPath();
+  tsCtx.ellipse(shadowOffsetX, shadowOffsetY, cw*0.8, ch*0.42, 0, 0, Math.PI*2);
+  tsCtx.fill();
 
   // Anel seleção/hover
   if(isSel){
-    tsCtx.strokeStyle='#f5c518';tsCtx.lineWidth=2.5;
-    tsCtx.setLineDash([4,3]);tsCtx.strokeRect(-cw/2-5,-ch/2-5,cw+10,ch+10);tsCtx.setLineDash([]);
-  }else if(isHov){
-    tsCtx.strokeStyle='#22d3ee55';tsCtx.lineWidth=1.5;tsCtx.strokeRect(-cw/2-3,-ch/2-3,cw+6,ch+6);
+    tsCtx.strokeStyle = '#f5c518'; tsCtx.lineWidth = 2.5;
+    tsCtx.setLineDash([4,3]);
+    tsCtx.strokeRect(-cw/2-6, -ch/2-6, cw+12, ch+12);
+    tsCtx.setLineDash([]);
+  } else if(isHov){
+    tsCtx.strokeStyle = '#22d3ee88'; tsCtx.lineWidth = 1.8;
+    tsCtx.strokeRect(-cw/2-3, -ch/2-3, cw+6, ch+6);
   }
 
   // Anel flash de infração
-  if(v.violationFlash>0){
-    const a=Math.sin(Date.now()*.03)*.5+.5;
-    tsCtx.strokeStyle=`rgba(239,68,68,${a})`;tsCtx.lineWidth=3;
-    tsCtx.strokeRect(-cw/2-6,-ch/2-6,cw+12,ch+12);
+  if(v.violationFlash > 0){
+    const a = Math.sin(Date.now()*.03)*.5 + .5;
+    tsCtx.strokeStyle = `rgba(239,68,68,${a})`;
+    tsCtx.lineWidth = 3;
+    tsCtx.strokeRect(-cw/2-7, -ch/2-7, cw+14, ch+14);
   }
 
-  // Corpo
-  tsCtx.shadowColor='rgba(0,0,0,.5)';tsCtx.shadowBlur=6;tsCtx.shadowOffsetY=2;
-  tsCtx.fillStyle=v.color;
-  tsCtx.beginPath();tsCtx.roundRect(-cw/2,-ch/2,cw,ch,v.type==='moto'?3:5);tsCtx.fill();
-  tsCtx.shadowBlur=0;tsCtx.shadowOffsetY=0;
-
-  // Detalhes por tipo
-  if(v.type==='car'||v.type==='taxi'){
-    tsCtx.fillStyle='rgba(150,220,255,.6)';
-    tsCtx.beginPath();tsCtx.roundRect(-cw/2+2,-ch/2+3,cw-4,ch*.28,2);tsCtx.fill();
-    tsCtx.fillStyle='rgba(150,220,255,.4)';
-    tsCtx.beginPath();tsCtx.roundRect(-cw/2+2,ch/2-ch*.22,cw-4,ch*.18,2);tsCtx.fill();
-    tsCtx.fillStyle=tsAdjColor(v.color,-20);
-    tsCtx.beginPath();tsCtx.roundRect(-cw/2+3,-ch/2+ch*.28,cw-6,ch*.42,2);tsCtx.fill();
-    if(v.type==='taxi'){tsCtx.fillStyle='#222';tsCtx.font='bold 5px DM Sans';tsCtx.textAlign='center';tsCtx.textBaseline='middle';tsCtx.fillText('TAXI',0,-ch*.08);}
-    // Faróis
-    const needLight=tsTimeOfDay==='night'||tsTimeOfDay==='dawn'||tsWeather==='storm';
-    if(needLight&&!v.noLight){
-      tsCtx.fillStyle='#ffffcc';tsCtx.shadowColor='#ffff99';tsCtx.shadowBlur=18;
-      tsCtx.fillRect(-cw/2+1,-ch/2+1,5,3);tsCtx.fillRect(cw/2-6,-ch/2+1,5,3);
-      const g=tsCtx.createLinearGradient(0,-ch/2,0,-ch/2-40);
-      g.addColorStop(0,'rgba(255,255,180,.16)');g.addColorStop(1,'transparent');
-      tsCtx.fillStyle=g;tsCtx.beginPath();
-      tsCtx.moveTo(-cw/2,-ch/2);tsCtx.lineTo(-cw*1.5,-ch/2-45);tsCtx.lineTo(cw*1.5,-ch/2-45);tsCtx.lineTo(cw/2,-ch/2);
-      tsCtx.fill();tsCtx.shadowBlur=0;
-    }
-    // Brake
-    if(v.brakeLights||v.stopped){
-      tsCtx.fillStyle='#ff2200';tsCtx.shadowColor='#ff2200';tsCtx.shadowBlur=12;
-      tsCtx.fillRect(-cw/2+1,ch/2-4,5,3);tsCtx.fillRect(cw/2-6,ch/2-4,5,3);tsCtx.shadowBlur=0;
-    }
-    // Celular (ícone sobre o carro)
-    if(v.cellphone){
-      tsCtx.font='7px serif';tsCtx.textAlign='center';
-      tsCtx.fillText('📱',0,-ch*.05);
-    }
-    // Sem cinto (ícone)
-    if(v.noBelt){
-      tsCtx.fillStyle='#fbbf24';tsCtx.font='6px serif';tsCtx.textAlign='center';
-      tsCtx.fillText('🔗',cw*.3,-ch*.1);
-    }
-  }else if(v.type==='moto'){
-    tsCtx.fillStyle='#fde68a';tsCtx.beginPath();tsCtx.arc(0,-ch*.28,3.5,0,Math.PI*2);tsCtx.fill();
+  if(v.type === 'moto'){
+    // ───────── MOTO ─────────
+    // Sombra das rodas
+    tsCtx.fillStyle = 'rgba(0,0,0,.4)';
+    tsCtx.beginPath(); tsCtx.ellipse(0, -ch*0.38, 2.6, 4, 0, 0, Math.PI*2); tsCtx.fill();
+    tsCtx.beginPath(); tsCtx.ellipse(0,  ch*0.38, 2.6, 4, 0, 0, Math.PI*2); tsCtx.fill();
+    // Roda dianteira (frente)
+    tsCtx.fillStyle = '#0a0a0a';
+    tsCtx.beginPath(); tsCtx.ellipse(0, -ch*0.42, 2.8, 5, 0, 0, Math.PI*2); tsCtx.fill();
+    // Aro
+    tsCtx.fillStyle = '#404040';
+    tsCtx.beginPath(); tsCtx.arc(0, -ch*0.42, 1.2, 0, Math.PI*2); tsCtx.fill();
+    // Roda traseira
+    tsCtx.fillStyle = '#0a0a0a';
+    tsCtx.beginPath(); tsCtx.ellipse(0,  ch*0.42, 2.8, 5, 0, 0, Math.PI*2); tsCtx.fill();
+    tsCtx.fillStyle = '#404040';
+    tsCtx.beginPath(); tsCtx.arc(0, ch*0.42, 1.2, 0, Math.PI*2); tsCtx.fill();
+    // Quadro/tanque
+    tsCtx.fillStyle = v.color;
+    tsCtx.shadowColor = 'rgba(0,0,0,.35)'; tsCtx.shadowBlur = 4;
+    tsCtx.beginPath(); tsCtx.roundRect(-cw/2+1, -ch/2+5, cw-2, ch-10, 3); tsCtx.fill();
+    tsCtx.shadowBlur = 0;
+    // Detalhe escuro do tanque
+    tsCtx.fillStyle = tsAdjColor(v.color, -25);
+    tsCtx.beginPath(); tsCtx.roundRect(-cw/2+2, -ch*0.05, cw-4, ch*0.3, 2); tsCtx.fill();
+    // Guidão (esquerda/direita)
+    tsCtx.strokeStyle = '#2a2a2a'; tsCtx.lineWidth = 1.4;
+    tsCtx.beginPath();
+    tsCtx.moveTo(-cw*0.55, -ch*0.25);
+    tsCtx.lineTo( cw*0.55, -ch*0.25);
+    tsCtx.stroke();
+    // Piloto: tronco (jaqueta)
+    tsCtx.fillStyle = v.noHelmet ? '#1e293b' : '#0f172a';
+    tsCtx.beginPath();
+    tsCtx.roundRect(-cw/2+2, -ch*0.12, cw-4, ch*0.42, 3);
+    tsCtx.fill();
+    // Piloto: cabeça
     if(v.noHelmet){
-      // Sem capacete — cabeça exposta
-      tsCtx.fillStyle='#fde68a';tsCtx.beginPath();tsCtx.arc(0,-ch*.28,3.5,0,Math.PI*2);tsCtx.fill();
-      tsCtx.font='7px serif';tsCtx.textAlign='center';tsCtx.fillText('⛑',0,-ch*.52);
-    }else{
-      tsCtx.fillStyle='#1e293b';tsCtx.beginPath();tsCtx.arc(0,-ch*.28,3.5,-Math.PI,.2);tsCtx.fill();
+      // Cabelo / pele exposta
+      tsCtx.fillStyle = '#fde0c4';
+      tsCtx.beginPath(); tsCtx.arc(0, -ch*0.32, 3.2, 0, Math.PI*2); tsCtx.fill();
+      tsCtx.fillStyle = '#1f1f1f';
+      tsCtx.beginPath();
+      tsCtx.arc(0, -ch*0.34, 3.2, Math.PI, 0, false);
+      tsCtx.closePath(); tsCtx.fill();
+      // Alerta capacete
+      tsCtx.font = '7px serif';
+      tsCtx.textAlign = 'center';
+      tsCtx.fillStyle = '#ef4444';
+      tsCtx.shadowColor = '#000'; tsCtx.shadowBlur = 2;
+      tsCtx.fillText('⛑', 0, -ch*0.55);
+      tsCtx.shadowBlur = 0;
+    } else {
+      // Capacete preto com viseira
+      tsCtx.fillStyle = '#0a0a0a';
+      tsCtx.beginPath(); tsCtx.arc(0, -ch*0.32, 3.6, 0, Math.PI*2); tsCtx.fill();
+      tsCtx.fillStyle = 'rgba(140,200,255,.7)';
+      tsCtx.beginPath();
+      tsCtx.arc(0, -ch*0.30, 3.0, Math.PI*1.1, Math.PI*1.9, false);
+      tsCtx.closePath(); tsCtx.fill();
+      // Reflexo no capacete
+      tsCtx.fillStyle = 'rgba(255,255,255,.45)';
+      tsCtx.beginPath(); tsCtx.arc(-1.2, -ch*0.34, 1, 0, Math.PI*2); tsCtx.fill();
     }
-    tsCtx.strokeStyle='#ffffff30';tsCtx.lineWidth=2;
-    tsCtx.beginPath();tsCtx.ellipse(0,-ch*.42,cw*.5,2,0,0,Math.PI*2);tsCtx.stroke();
-    tsCtx.beginPath();tsCtx.ellipse(0,ch*.42,cw*.5,2,0,0,Math.PI*2);tsCtx.stroke();
-  }else if(v.type==='bus'){
-    for(let i=0;i<6;i++){
-      tsCtx.fillStyle=i===0?'rgba(150,220,255,.65)':'rgba(147,210,255,.4)';
-      tsCtx.fillRect(-cw/2+3,-ch/2+5+i*7.5,cw-6,5.5);
+    // Farol dianteiro
+    const needLight = tsTimeOfDay==='night' || tsTimeOfDay==='dawn' || tsWeather==='storm' || tsWeather==='fog';
+    if(needLight && !v.noLight){
+      tsCtx.fillStyle = '#ffffe0';
+      tsCtx.shadowColor = '#ffff99'; tsCtx.shadowBlur = 14;
+      tsCtx.beginPath(); tsCtx.arc(0, -ch*0.5, 1.6, 0, Math.PI*2); tsCtx.fill();
+      tsCtx.shadowBlur = 0;
     }
-    if(v.brakeLights||v.stopped){tsCtx.fillStyle='#ff2200';tsCtx.shadowColor='#ff2200';tsCtx.shadowBlur=10;tsCtx.fillRect(-cw/2,ch/2-3,cw,3);tsCtx.shadowBlur=0;}
-  }else if(v.type==='truck'){
-    tsCtx.fillStyle=tsAdjColor(v.color,20);tsCtx.beginPath();tsCtx.roundRect(-cw/2,-ch/2,cw,ch*.35,3);tsCtx.fill();
-    tsCtx.fillStyle='rgba(150,220,255,.55)';tsCtx.fillRect(-cw/2+2,-ch/2+2,cw-4,ch*.22);
-    tsCtx.strokeStyle='#ffffff18';tsCtx.lineWidth=1.2;tsCtx.strokeRect(-cw/2,ch*.35-ch/2,cw,ch*.62);
-    if(Math.random()<.025)tsSpawnParticle(v.x,v.y,'smoke');
-  }else if(v.type==='ambulance'){
-    tsCtx.fillStyle='#ef4444';tsCtx.fillRect(-cw/2,-ch/2,cw,6);tsCtx.fillRect(-cw/2,ch/2-6,cw,6);
-    tsCtx.fillStyle='#ef4444';tsCtx.fillRect(-2,-ch*.15,4,ch*.3);tsCtx.fillRect(-cw*.3,-3,cw*.6,4);
-    tsCtx.font='5px serif';tsCtx.fillStyle='#fff';tsCtx.textAlign='center';tsCtx.fillText('SAMU',0,ch*.35);
-    const ft=Date.now()*.015;
-    tsCtx.fillStyle=Math.sin(ft)>.3?'rgba(0,100,255,.7)':'rgba(255,50,50,.7)';
-    tsCtx.shadowColor=Math.sin(ft)>.3?'#0044ff':'#ff2200';tsCtx.shadowBlur=20;
-    tsCtx.beginPath();tsCtx.arc(-cw*.3,-ch*.4,3,0,Math.PI*2);tsCtx.fill();
-    tsCtx.fillStyle=Math.sin(ft)>.3?'rgba(255,50,50,.7)':'rgba(0,100,255,.7)';
-    tsCtx.shadowColor=Math.sin(ft)>.3?'#ff2200':'#0044ff';
-    tsCtx.beginPath();tsCtx.arc(cw*.3,-ch*.4,3,0,Math.PI*2);tsCtx.fill();
-    tsCtx.shadowBlur=0;
-  }
+    // Lanterna traseira
+    if(v.brakeLights || v.stopped){
+      tsCtx.fillStyle = '#ff2200';
+      tsCtx.shadowColor = '#ff2200'; tsCtx.shadowBlur = 8;
+      tsCtx.beginPath(); tsCtx.arc(0, ch*0.5, 1.4, 0, Math.PI*2); tsCtx.fill();
+      tsCtx.shadowBlur = 0;
+    }
+  } else {
+    // ───────── CARRO/ÔNIBUS/CAMINHÃO/AMBULÂNCIA ─────────
+    const isCar  = (v.type==='car' || v.type==='taxi' || v.type==='police');
+    const isBus  = v.type==='bus';
+    const isTrk  = v.type==='truck';
+    const isAmb  = v.type==='ambulance';
 
-  // Bêbado: borda ondulada
+    // Pneus (4 rodas) — desenhar PRIMEIRO para ficar embaixo do corpo
+    const wheelW = isBus||isTrk ? 3.2 : 2.8;
+    const wheelH = isBus||isTrk ? 5.5 : 4.5;
+    const wheelOffX = cw*0.5 + 0.3;
+    const wheelOffYf = -ch*0.32; // dianteiras
+    const wheelOffYr =  ch*0.32; // traseiras
+    tsCtx.fillStyle = '#0a0a0a';
+    [-1,1].forEach(sx=>{
+      [wheelOffYf, wheelOffYr].forEach(wy=>{
+        tsCtx.beginPath();
+        tsCtx.roundRect(sx*wheelOffX - wheelW/2, wy - wheelH/2, wheelW, wheelH, 1.2);
+        tsCtx.fill();
+      });
+    });
+
+    // Corpo principal com gradiente realista
+    const bodyGrad = tsCtx.createLinearGradient(-cw/2, 0, cw/2, 0);
+    bodyGrad.addColorStop(0, tsAdjColor(v.color, -30));
+    bodyGrad.addColorStop(.5, v.color);
+    bodyGrad.addColorStop(1, tsAdjColor(v.color, -45));
+    tsCtx.shadowColor = 'rgba(0,0,0,.5)';
+    tsCtx.shadowBlur = 4; tsCtx.shadowOffsetY = 1;
+    tsCtx.fillStyle = bodyGrad;
+    tsCtx.beginPath();
+    tsCtx.roundRect(-cw/2, -ch/2, cw, ch, isBus||isTrk ? 3 : 5);
+    tsCtx.fill();
+    tsCtx.shadowBlur = 0; tsCtx.shadowOffsetY = 0;
+
+    // Reflexo claro no topo (highlight)
+    const hg = tsCtx.createLinearGradient(0, -ch/2, 0, -ch/2 + ch*0.18);
+    hg.addColorStop(0, 'rgba(255,255,255,.18)');
+    hg.addColorStop(1, 'rgba(255,255,255,0)');
+    tsCtx.fillStyle = hg;
+    tsCtx.beginPath();
+    tsCtx.roundRect(-cw/2+1, -ch/2+1, cw-2, ch*0.18, 4);
+    tsCtx.fill();
+
+    if(isCar){
+      // Para-brisa dianteiro (mais inclinado)
+      const wsGrad = tsCtx.createLinearGradient(0, -ch/2, 0, -ch/2 + ch*0.3);
+      wsGrad.addColorStop(0, 'rgba(180,225,255,.85)');
+      wsGrad.addColorStop(1, 'rgba(120,180,220,.5)');
+      tsCtx.fillStyle = wsGrad;
+      tsCtx.beginPath();
+      tsCtx.moveTo(-cw/2+3, -ch/2 + ch*0.18);
+      tsCtx.lineTo( cw/2-3, -ch/2 + ch*0.18);
+      tsCtx.lineTo( cw/2-4, -ch/2 + ch*0.32);
+      tsCtx.lineTo(-cw/2+4, -ch/2 + ch*0.32);
+      tsCtx.closePath(); tsCtx.fill();
+
+      // Capô (área entre para-brisa e frente)
+      tsCtx.fillStyle = tsAdjColor(v.color, -10);
+      tsCtx.beginPath();
+      tsCtx.roundRect(-cw/2+2, -ch/2+3, cw-4, ch*0.15, 2);
+      tsCtx.fill();
+
+      // Teto (superfície superior)
+      tsCtx.fillStyle = tsAdjColor(v.color, -20);
+      tsCtx.beginPath();
+      tsCtx.roundRect(-cw/2+3, -ch/2 + ch*0.32, cw-6, ch*0.36, 2);
+      tsCtx.fill();
+
+      // Janelas laterais (no teto)
+      tsCtx.fillStyle = 'rgba(180,225,255,.5)';
+      tsCtx.fillRect(-cw/2+4, -ch/2 + ch*0.34, 2, ch*0.32);
+      tsCtx.fillRect( cw/2-6, -ch/2 + ch*0.34, 2, ch*0.32);
+
+      // Para-brisa traseiro
+      const wsGrad2 = tsCtx.createLinearGradient(0, ch/2 - ch*0.3, 0, ch/2);
+      wsGrad2.addColorStop(0, 'rgba(120,180,220,.5)');
+      wsGrad2.addColorStop(1, 'rgba(180,225,255,.75)');
+      tsCtx.fillStyle = wsGrad2;
+      tsCtx.beginPath();
+      tsCtx.moveTo(-cw/2+4, ch/2 - ch*0.30);
+      tsCtx.lineTo( cw/2-4, ch/2 - ch*0.30);
+      tsCtx.lineTo( cw/2-3, ch/2 - ch*0.18);
+      tsCtx.lineTo(-cw/2+3, ch/2 - ch*0.18);
+      tsCtx.closePath(); tsCtx.fill();
+
+      // Retrovisores
+      tsCtx.fillStyle = tsAdjColor(v.color, -40);
+      tsCtx.fillRect(-cw/2 - 1.2, -ch/2 + ch*0.22, 1.5, 2.5);
+      tsCtx.fillRect( cw/2 - 0.3, -ch/2 + ch*0.22, 1.5, 2.5);
+
+      // Linha central do capô
+      tsCtx.strokeStyle = 'rgba(0,0,0,.25)';
+      tsCtx.lineWidth = 0.8;
+      tsCtx.beginPath();
+      tsCtx.moveTo(0, -ch/2+3); tsCtx.lineTo(0, ch/2-3);
+      tsCtx.stroke();
+
+      // Grade dianteira (grille)
+      tsCtx.fillStyle = '#0a0a0a';
+      tsCtx.fillRect(-cw/2+3, -ch/2+1, cw-6, 2);
+
+      // Faróis dianteiros (2)
+      const needLight = tsTimeOfDay==='night' || tsTimeOfDay==='dawn' || tsWeather==='storm' || tsWeather==='fog';
+      const headlightOn = needLight && !v.noLight;
+      if(headlightOn){
+        tsCtx.fillStyle = '#ffffe0';
+        tsCtx.shadowColor = '#fff8b8'; tsCtx.shadowBlur = 14;
+      } else {
+        tsCtx.fillStyle = '#fef9c3';
+        tsCtx.shadowBlur = 0;
+      }
+      tsCtx.beginPath();
+      tsCtx.roundRect(-cw/2+3, -ch/2-0.5, cw*0.28, 2.5, 1);
+      tsCtx.fill();
+      tsCtx.beginPath();
+      tsCtx.roundRect( cw/2-3 - cw*0.28, -ch/2-0.5, cw*0.28, 2.5, 1);
+      tsCtx.fill();
+      tsCtx.shadowBlur = 0;
+
+      // Cone de luz (faróis acesos)
+      if(headlightOn){
+        const lg = tsCtx.createLinearGradient(0, -ch/2, 0, -ch/2 - 50);
+        lg.addColorStop(0, 'rgba(255,255,200,.30)');
+        lg.addColorStop(1, 'rgba(255,255,200,0)');
+        tsCtx.fillStyle = lg;
+        tsCtx.beginPath();
+        tsCtx.moveTo(-cw/2 + 1, -ch/2);
+        tsCtx.lineTo(-cw*1.3, -ch/2 - 55);
+        tsCtx.lineTo( cw*1.3, -ch/2 - 55);
+        tsCtx.lineTo( cw/2 - 1, -ch/2);
+        tsCtx.closePath(); tsCtx.fill();
+      }
+
+      // Lanternas traseiras (2 vermelhas)
+      const brakeOn = v.brakeLights || v.stopped || v.currentSpeedMul < 0.7;
+      tsCtx.fillStyle = brakeOn ? '#ff1100' : '#7f1d1d';
+      if(brakeOn){ tsCtx.shadowColor = '#ff1100'; tsCtx.shadowBlur = 12; }
+      tsCtx.beginPath();
+      tsCtx.roundRect(-cw/2+2, ch/2-2.5, cw*0.30, 2.2, 1);
+      tsCtx.fill();
+      tsCtx.beginPath();
+      tsCtx.roundRect( cw/2-2 - cw*0.30, ch/2-2.5, cw*0.30, 2.2, 1);
+      tsCtx.fill();
+      tsCtx.shadowBlur = 0;
+
+      // Sinaleiros laranja piscando (se ativo)
+      if(v.signalSide !== 0 && v.signalTimer > 0){
+        const blink = Math.floor(Date.now()/250) % 2 === 0;
+        if(blink){
+          tsCtx.fillStyle = '#fb923c';
+          tsCtx.shadowColor = '#fb923c'; tsCtx.shadowBlur = 10;
+          // Frente
+          tsCtx.fillRect(v.signalSide<0 ? -cw/2+1 : cw/2-2.5, -ch/2+0.5, 1.5, 2);
+          // Trás
+          tsCtx.fillRect(v.signalSide<0 ? -cw/2+1 : cw/2-2.5, ch/2-3, 1.5, 2);
+          tsCtx.shadowBlur = 0;
+        }
+      }
+
+      // TAXI: faixa amarela e luz no teto
+      if(v.type === 'taxi'){
+        tsCtx.fillStyle = '#fbbf24';
+        tsCtx.fillRect(-cw/2+3, -ch/2 + ch*0.42, cw-6, 2);
+        tsCtx.fillStyle = '#0a0a0a';
+        tsCtx.font = 'bold 5px DM Sans';
+        tsCtx.textAlign = 'center'; tsCtx.textBaseline = 'middle';
+        tsCtx.fillText('TAXI', 0, -ch/2 + ch*0.45);
+        // Caixinha em cima do teto
+        tsCtx.fillStyle = '#fef08a';
+        tsCtx.fillRect(-3.5, -ch/2 + ch*0.5, 7, 2);
+      }
+
+      // Ícones de infração visíveis
+      if(v.cellphone){
+        tsCtx.font = '7px serif';
+        tsCtx.textAlign = 'center';
+        tsCtx.fillStyle = '#fbbf24';
+        tsCtx.shadowColor = '#000'; tsCtx.shadowBlur = 2;
+        tsCtx.fillText('📱', 0, -ch*0.05);
+        tsCtx.shadowBlur = 0;
+      }
+      if(v.noBelt){
+        tsCtx.font = '6px serif';
+        tsCtx.textAlign = 'center';
+        tsCtx.fillStyle = '#ef4444';
+        tsCtx.shadowColor = '#000'; tsCtx.shadowBlur = 2;
+        tsCtx.fillText('⚠', cw*0.32, -ch*0.1);
+        tsCtx.shadowBlur = 0;
+      }
+    }
+
+    if(isBus){
+      // Janelas (várias laterais)
+      tsCtx.fillStyle = 'rgba(150,220,255,.55)';
+      for(let i=0;i<7;i++){
+        tsCtx.fillRect(-cw/2+2.5, -ch/2+5+i*7, cw-5, 5);
+      }
+      // Faixa superior colorida
+      tsCtx.fillStyle = tsAdjColor(v.color, 25);
+      tsCtx.fillRect(-cw/2+1, -ch/2+1, cw-2, 3);
+      // Linha de teto
+      tsCtx.fillStyle = tsAdjColor(v.color, -30);
+      tsCtx.fillRect(-cw/2+1, -ch/2+12, cw-2, 0.8);
+      // Faixa refletiva
+      tsCtx.fillStyle = '#fbbf24';
+      tsCtx.fillRect(-cw/2+1, ch*0.35, cw-2, 1.5);
+      // Faróis
+      const needLight = tsTimeOfDay==='night' || tsTimeOfDay==='dawn' || tsWeather==='storm' || tsWeather==='fog';
+      if(needLight && !v.noLight){
+        tsCtx.fillStyle = '#ffffe0'; tsCtx.shadowColor = '#fff'; tsCtx.shadowBlur = 12;
+        tsCtx.fillRect(-cw/2+2, -ch/2-1, 4, 2);
+        tsCtx.fillRect( cw/2-6, -ch/2-1, 4, 2);
+        tsCtx.shadowBlur = 0;
+      }
+      // Lanternas
+      if(v.brakeLights || v.stopped){
+        tsCtx.fillStyle = '#ff2200';
+        tsCtx.shadowColor = '#ff2200'; tsCtx.shadowBlur = 10;
+        tsCtx.fillRect(-cw/2+1, ch/2-2.5, cw-2, 2);
+        tsCtx.shadowBlur = 0;
+      }
+      // Porta (linha na lateral)
+      tsCtx.strokeStyle = 'rgba(0,0,0,.4)';
+      tsCtx.lineWidth = 1;
+      tsCtx.beginPath();
+      tsCtx.moveTo(cw/2-0.5, -ch/2+18);
+      tsCtx.lineTo(cw/2-0.5, -ch/2+30);
+      tsCtx.stroke();
+    }
+
+    if(isTrk){
+      // Cabine (frente, mais clara)
+      tsCtx.fillStyle = tsAdjColor(v.color, 18);
+      tsCtx.beginPath();
+      tsCtx.roundRect(-cw/2, -ch/2, cw, ch*0.35, 3);
+      tsCtx.fill();
+      // Para-brisa cabine
+      tsCtx.fillStyle = 'rgba(150,220,255,.65)';
+      tsCtx.beginPath();
+      tsCtx.roundRect(-cw/2+2, -ch/2+2, cw-4, ch*0.20, 2);
+      tsCtx.fill();
+      // Faróis
+      const needLight = tsTimeOfDay==='night' || tsTimeOfDay==='dawn' || tsWeather==='storm' || tsWeather==='fog';
+      if(needLight && !v.noLight){
+        tsCtx.fillStyle = '#ffffe0'; tsCtx.shadowColor = '#fff'; tsCtx.shadowBlur = 10;
+      } else { tsCtx.fillStyle = '#fef9c3'; }
+      tsCtx.fillRect(-cw/2+2, -ch/2-1, 4, 2);
+      tsCtx.fillRect( cw/2-6, -ch/2-1, 4, 2);
+      tsCtx.shadowBlur = 0;
+      // Baú (carga)
+      tsCtx.strokeStyle = 'rgba(255,255,255,.18)';
+      tsCtx.lineWidth = 1.2;
+      tsCtx.strokeRect(-cw/2, -ch/2 + ch*0.35, cw, ch*0.62);
+      // Linha vertical do baú
+      for(let yy=-ch/2 + ch*0.4; yy<ch/2-2; yy+=8){
+        tsCtx.strokeStyle = 'rgba(0,0,0,.3)';
+        tsCtx.beginPath();
+        tsCtx.moveTo(-cw/2+1, yy); tsCtx.lineTo(cw/2-1, yy); tsCtx.stroke();
+      }
+      // Lanternas
+      if(v.brakeLights || v.stopped){
+        tsCtx.fillStyle = '#ff2200';
+        tsCtx.shadowColor = '#ff2200'; tsCtx.shadowBlur = 8;
+        tsCtx.fillRect(-cw/2+1, ch/2-2, cw-2, 1.5);
+        tsCtx.shadowBlur = 0;
+      }
+      // Fumaça do escapamento (ocasional)
+      if(Math.random() < 0.02) tsSpawnParticle(v.x, v.y, 'smoke');
+    }
+
+    if(isAmb){
+      // Corpo branco — repintar área principal
+      tsCtx.fillStyle = '#fafafa';
+      tsCtx.beginPath();
+      tsCtx.roundRect(-cw/2, -ch/2, cw, ch, 4);
+      tsCtx.fill();
+      // Faixa vermelha lateral
+      tsCtx.fillStyle = '#dc2626';
+      tsCtx.fillRect(-cw/2, -2, cw, 4);
+      // Cruz médica
+      tsCtx.fillStyle = '#dc2626';
+      tsCtx.fillRect(-1.5, ch*0.05, 3, ch*0.18);
+      tsCtx.fillRect(-cw*0.18, ch*0.12, cw*0.36, 3);
+      // SAMU
+      tsCtx.fillStyle = '#0a0a0a';
+      tsCtx.font = 'bold 5px DM Sans';
+      tsCtx.textAlign = 'center'; tsCtx.textBaseline = 'middle';
+      tsCtx.fillText('SAMU', 0, ch*0.36);
+      // Sirenes piscando
+      const ft = Date.now()*.015;
+      const blueOn = Math.sin(ft) > 0.3;
+      tsCtx.fillStyle = blueOn ? 'rgba(0,100,255,.95)' : 'rgba(20,20,40,.6)';
+      tsCtx.shadowColor = blueOn ? '#0044ff' : 'transparent';
+      tsCtx.shadowBlur = blueOn ? 22 : 0;
+      tsCtx.beginPath(); tsCtx.arc(-cw*0.30, -ch*0.42, 3, 0, Math.PI*2); tsCtx.fill();
+      tsCtx.fillStyle = !blueOn ? 'rgba(255,40,40,.95)' : 'rgba(40,20,20,.6)';
+      tsCtx.shadowColor = !blueOn ? '#ff2200' : 'transparent';
+      tsCtx.shadowBlur = !blueOn ? 22 : 0;
+      tsCtx.beginPath(); tsCtx.arc( cw*0.30, -ch*0.42, 3, 0, Math.PI*2); tsCtx.fill();
+      tsCtx.shadowBlur = 0;
+      // Faróis sempre acesos
+      tsCtx.fillStyle = '#ffffe0';
+      tsCtx.shadowColor = '#fff'; tsCtx.shadowBlur = 12;
+      tsCtx.fillRect(-cw/2+2, -ch/2-1, 4, 2);
+      tsCtx.fillRect( cw/2-6, -ch/2-1, 4, 2);
+      tsCtx.shadowBlur = 0;
+    }
+
+    // ───────── VIATURA POLICIAL ─────────
+    if(v.isPolice){
+      // Repintar azul
+      tsCtx.fillStyle = '#1d4ed8';
+      tsCtx.beginPath(); tsCtx.roundRect(-cw/2,-ch/2,cw,ch,4); tsCtx.fill();
+      // Faixa branca/preta diagonal
+      tsCtx.fillStyle = '#f8fafc';
+      tsCtx.fillRect(-cw/2+1,-2,cw-2,4);
+      tsCtx.fillStyle = '#0a0a0a';
+      tsCtx.fillRect(-cw/2+1,0,cw-2,2);
+      // "PM" text
+      tsCtx.fillStyle = '#f8fafc';
+      tsCtx.font='bold 5px DM Sans';tsCtx.textAlign='center';tsCtx.textBaseline='middle';
+      tsCtx.fillText('PM',0,ch*0.3);
+      // Sirene piscando azul/vermelho
+      const pt=Date.now()*.02;
+      const pOn=Math.sin(pt)>0;
+      tsCtx.fillStyle=pOn?'rgba(37,99,235,.95)':'rgba(239,68,68,.95)';
+      tsCtx.shadowColor=pOn?'#1d4ed8':'#ef4444';tsCtx.shadowBlur=20;
+      tsCtx.beginPath();tsCtx.arc(-cw*0.28,-ch*0.42,2.5,0,Math.PI*2);tsCtx.fill();
+      tsCtx.fillStyle=!pOn?'rgba(37,99,235,.95)':'rgba(239,68,68,.95)';
+      tsCtx.shadowColor=!pOn?'#1d4ed8':'#ef4444';
+      tsCtx.beginPath();tsCtx.arc(cw*0.28,-ch*0.42,2.5,0,Math.PI*2);tsCtx.fill();
+      tsCtx.shadowBlur=0;
+      // Faróis
+      tsCtx.fillStyle='#ffffe0';tsCtx.shadowColor='#fff';tsCtx.shadowBlur=10;
+      tsCtx.fillRect(-cw/2+2,-ch/2-1,4,2);tsCtx.fillRect(cw/2-6,-ch/2-1,4,2);
+      tsCtx.shadowBlur=0;
+    }
+  } // end else (car/bus/truck/ambulance/police)
+
+  // Bêbado: borda ondulada vermelha
   if(v.drunk){
-    tsCtx.strokeStyle='#f43f5e';tsCtx.lineWidth=2;tsCtx.setLineDash([3,3]);
-    tsCtx.strokeRect(-cw/2-3,-ch/2-3,cw+6,ch+6);tsCtx.setLineDash([]);
+    tsCtx.strokeStyle = '#f43f5e';
+    tsCtx.lineWidth = 2;
+    tsCtx.setLineDash([3,3]);
+    tsCtx.strokeRect(-cw/2-3, -ch/2-3, cw+6, ch+6);
+    tsCtx.setLineDash([]);
   }
 
   // Contramão: seta vermelha
   if(v.wrongWay){
-    tsCtx.fillStyle='#ef4444';tsCtx.font='bold 8px serif';
-    tsCtx.textAlign='center';tsCtx.fillText('↩',-0,-ch/2-8);
+    tsCtx.fillStyle = '#ef4444';
+    tsCtx.font = 'bold 9px serif';
+    tsCtx.textAlign = 'center';
+    tsCtx.shadowColor = '#000'; tsCtx.shadowBlur = 3;
+    tsCtx.fillText('↩', 0, -ch/2 - 8);
+    tsCtx.shadowBlur = 0;
   }
 
-  // Badge de velocidade (infratores ou selecionados)
-  if(isSel||(v.violator&&!v.stopped)){
-    tsCtx.rotate(-angle);
-    const kmh=tsGetVehicleKmh(v);
-    const lim=tsGetSpeedLimit(v);
-    const col=kmh>lim*1.5?'#dc2626':kmh>lim*1.2?'#f97316':kmh>lim?'#fbbf24':'#22c55e';
-    tsCtx.fillStyle='rgba(0,0,0,.75)';
-    tsCtx.beginPath();tsCtx.roundRect(-20,-ch/2-22,40,15,4);tsCtx.fill();
-    tsCtx.fillStyle=col;tsCtx.font='bold 7px DM Mono,monospace';
-    tsCtx.textAlign='center';tsCtx.textBaseline='middle';
-    tsCtx.fillText(`${kmh}/${lim}km/h`,0,-ch/2-15);
+  // Badge de velocidade
+  if(isSel || (v.violator && !v.stopped)){
+    tsCtx.rotate(-(angle + Math.PI/2 + rotExtra));
+    const kmh = tsGetVehicleKmh(v);
+    const lim = tsGetSpeedLimit(v);
+    const col = kmh > lim*1.5 ? '#dc2626' :
+                kmh > lim*1.2 ? '#f97316' :
+                kmh > lim     ? '#fbbf24' : '#22c55e';
+    tsCtx.fillStyle = 'rgba(0,0,0,.78)';
+    tsCtx.beginPath();
+    tsCtx.roundRect(-22, -ch/2 - 24, 44, 16, 4);
+    tsCtx.fill();
+    tsCtx.fillStyle = col;
+    tsCtx.font = 'bold 8px DM Mono,monospace';
+    tsCtx.textAlign = 'center';
+    tsCtx.textBaseline = 'middle';
+    tsCtx.fillText(`${kmh}/${lim}km/h`, 0, -ch/2 - 16);
   }
 
   tsCtx.restore();
 }
 
 function tsDrawPedestrian(p){
-  if(!p.alive)return;
-  tsCtx.save();tsCtx.globalAlpha=p.alpha;
-  tsCtx.fillStyle='rgba(0,0,0,.2)';
-  tsCtx.beginPath();tsCtx.ellipse(p.x,p.y+p.r+2,p.r*.9,2.5,0,0,Math.PI*2);tsCtx.fill();
-  tsCtx.fillStyle=p.color;tsCtx.shadowColor=p.color;tsCtx.shadowBlur=p.reckless?10:4;
-  tsCtx.beginPath();tsCtx.arc(p.x,p.y,p.r,0,Math.PI*2);tsCtx.fill();tsCtx.shadowBlur=0;
-  tsCtx.fillStyle='#fde68a';tsCtx.beginPath();tsCtx.arc(p.x,p.y-p.r*1.5,p.r*.65,0,Math.PI*2);tsCtx.fill();
-  const t=Date.now()*.008;
-  if(p.phase==='cross'){
-    tsCtx.strokeStyle=p.color;tsCtx.lineWidth=1.5;tsCtx.beginPath();
-    tsCtx.moveTo(p.x,p.y+p.r);tsCtx.lineTo(p.x-2+Math.sin(t)*2.5,p.y+p.r*2.2+Math.abs(Math.sin(t))*1.5);
-    tsCtx.moveTo(p.x,p.y+p.r);tsCtx.lineTo(p.x+2-Math.sin(t)*2.5,p.y+p.r*2.2+Math.abs(Math.cos(t))*1.5);
+  if(!p.alive&&!p.lying) return;
+  tsCtx.save();
+  tsCtx.globalAlpha = p.alpha||1;
+
+  // ─── PEDESTRE DEITADO (atropelado) ───────────────
+  if(p.lying || p.phase==='fallen'){
+    const cx=p.x, cy=p.y, r=p.r||5;
+    // Sombra
+    tsCtx.fillStyle='rgba(0,0,0,.4)';
+    tsCtx.beginPath();tsCtx.ellipse(cx+2,cy+3,r*3.2,r*0.9,0,0,Math.PI*2);tsCtx.fill();
+    // Corpo deitado (horizontal)
+    tsCtx.fillStyle=p.color||'#2563eb';
+    tsCtx.beginPath();tsCtx.ellipse(cx,cy,r*3.0,r*0.75,0,0,Math.PI*2);tsCtx.fill();
+    // Cabeça ao lado
+    tsCtx.fillStyle=p.skin||'#fde0c4';
+    tsCtx.beginPath();tsCtx.arc(cx+r*2.8,cy,r*0.85,0,Math.PI*2);tsCtx.fill();
+    // Pernas
+    tsCtx.strokeStyle=p.pantsColor||'#1e293b';tsCtx.lineWidth=r*0.7;tsCtx.lineCap='round';
+    tsCtx.beginPath();tsCtx.moveTo(cx-r*2.5,cy);tsCtx.lineTo(cx-r*3.5,cy+r*0.8);tsCtx.stroke();
+    tsCtx.beginPath();tsCtx.moveTo(cx-r*2.5,cy);tsCtx.lineTo(cx-r*3.5,cy-r*0.8);tsCtx.stroke();
+    // Indicador SOS piscando
+    const blink=Math.floor(Date.now()/500)%2===0;
+    if(blink){
+      tsCtx.font='10px serif';tsCtx.textAlign='center';
+      tsCtx.shadowColor='#ef4444';tsCtx.shadowBlur=6;
+      tsCtx.fillStyle='#ef4444';
+      tsCtx.fillText('🚨',cx,cy-r*2.5);
+      tsCtx.shadowBlur=0;
+    }
+    // Badge "SAMU?" se ambulância não chamada
+    if(!p.ambulanceCalled){
+      tsCtx.fillStyle='rgba(239,68,68,.9)';
+      tsCtx.beginPath();tsCtx.roundRect(cx-22,cy-r*4,44,12,4);tsCtx.fill();
+      tsCtx.fillStyle='#fff';tsCtx.font='bold 7px DM Sans';tsCtx.textAlign='center';
+      tsCtx.fillText('Chame o SAMU!',cx,cy-r*3.4);
+    }
+    tsCtx.restore();
+    return;
+  }
+
+  // Determinar direção de "facing" (frente do andar)
+  const moving = (p.phase==='approach' || p.phase==='cross');
+  if(moving){
+    const tx = p.crosswalk.dir==='h' ? p.dstX : p.crosswalk.x;
+    const ty = p.crosswalk.dir==='v' ? p.dstY : p.crosswalk.y;
+    const ang = Math.atan2(ty - p.y, tx - p.x);
+    if(!isNaN(ang)) p.facing = ang;
+  }
+
+  // Avançar fase do passo apenas quando andando
+  if(moving){
+    p.walkPhase = (p.walkPhase || 0) + 0.22 * tsSpeedMult;
+  }
+
+  // Sombra elíptica
+  tsCtx.fillStyle = 'rgba(0,0,0,.32)';
+  tsCtx.beginPath();
+  tsCtx.ellipse(p.x, p.y + p.r + 3, p.r*1.05, 2.5, 0, 0, Math.PI*2);
+  tsCtx.fill();
+
+  const swing = Math.sin(p.walkPhase || 0) * (moving ? 1 : 0);
+  const armSwing = swing * 2.5;
+  const legSwing = swing * 3.5;
+  const headBob = Math.abs(swing) * 0.6;
+
+  // Coordenadas relativas ao centro do pedestre (p.x, p.y = centro do tronco)
+  const cx = p.x;
+  const cy = p.y - headBob;
+  const r  = p.r;
+
+  // Pernas
+  tsCtx.strokeStyle = p.pantsColor || '#1e293b';
+  tsCtx.lineWidth = Math.max(1.5, r*0.55);
+  tsCtx.lineCap = 'round';
+  tsCtx.beginPath();
+  tsCtx.moveTo(cx, cy + r*0.2);
+  tsCtx.lineTo(cx - r*0.35, cy + r*1.9 + Math.abs(legSwing)*0.4);
+  tsCtx.moveTo(cx, cy + r*0.2);
+  tsCtx.lineTo(cx + r*0.35, cy + r*1.9 + Math.abs(legSwing)*0.4);
+  tsCtx.stroke();
+
+  // Sapatos
+  tsCtx.fillStyle = '#0a0a0a';
+  tsCtx.beginPath(); tsCtx.ellipse(cx - r*0.35, cy + r*2.0, r*0.4, r*0.22, 0, 0, Math.PI*2); tsCtx.fill();
+  tsCtx.beginPath(); tsCtx.ellipse(cx + r*0.35, cy + r*2.0, r*0.4, r*0.22, 0, 0, Math.PI*2); tsCtx.fill();
+
+  // Tronco/torso (camisa)
+  if(p.reckless){
+    tsCtx.shadowColor = p.color;
+    tsCtx.shadowBlur = 8;
+  }
+  tsCtx.fillStyle = p.color;
+  tsCtx.beginPath();
+  tsCtx.roundRect(cx - r*0.85, cy - r*0.4, r*1.7, r*1.6, r*0.25);
+  tsCtx.fill();
+  tsCtx.shadowBlur = 0;
+
+  // Braços (com swing)
+  tsCtx.strokeStyle = p.color;
+  tsCtx.lineWidth = Math.max(1.3, r*0.45);
+  tsCtx.beginPath();
+  tsCtx.moveTo(cx - r*0.85, cy - r*0.2);
+  tsCtx.lineTo(cx - r*1.1 - armSwing*0.3, cy + r*0.9 + armSwing*0.4);
+  tsCtx.moveTo(cx + r*0.85, cy - r*0.2);
+  tsCtx.lineTo(cx + r*1.1 + armSwing*0.3, cy + r*0.9 - armSwing*0.4);
+  tsCtx.stroke();
+  // Mãos (skin)
+  tsCtx.fillStyle = p.skin || '#fde0c4';
+  tsCtx.beginPath(); tsCtx.arc(cx - r*1.1 - armSwing*0.3, cy + r*0.95 + armSwing*0.4, r*0.22, 0, Math.PI*2); tsCtx.fill();
+  tsCtx.beginPath(); tsCtx.arc(cx + r*1.1 + armSwing*0.3, cy + r*0.95 - armSwing*0.4, r*0.22, 0, Math.PI*2); tsCtx.fill();
+
+  // Pescoço
+  tsCtx.fillStyle = p.skin || '#fde0c4';
+  tsCtx.fillRect(cx - r*0.18, cy - r*0.55, r*0.36, r*0.25);
+
+  // Cabeça
+  tsCtx.fillStyle = p.skin || '#fde0c4';
+  tsCtx.beginPath(); tsCtx.arc(cx, cy - r*1.05, r*0.7, 0, Math.PI*2); tsCtx.fill();
+  // Cabelo
+  tsCtx.fillStyle = p.hair || '#1f1f1f';
+  tsCtx.beginPath();
+  tsCtx.arc(cx, cy - r*1.15, r*0.72, Math.PI, 0, false);
+  tsCtx.lineTo(cx + r*0.7, cy - r*1.0);
+  tsCtx.lineTo(cx - r*0.7, cy - r*1.0);
+  tsCtx.closePath();
+  tsCtx.fill();
+  // Olhinhos (pontinhos pretos)
+  if(!p.isChild){
+    tsCtx.fillStyle = '#0a0a0a';
+    tsCtx.fillRect(cx - r*0.22, cy - r*1.05, 1, 1);
+    tsCtx.fillRect(cx + r*0.18, cy - r*1.05, 1, 1);
+  }
+
+  // Guarda-chuva (chuva)
+  if(p.hasUmbrella && (tsWeather==='rain'||tsWeather==='storm')){
+    tsCtx.fillStyle = p.umbrellaColor;
+    tsCtx.beginPath();
+    tsCtx.arc(cx, cy - r*1.8, r*1.5, Math.PI, 0, false);
+    tsCtx.lineTo(cx - r*1.5, cy - r*1.7);
+    tsCtx.closePath();
+    tsCtx.fill();
+    tsCtx.strokeStyle = '#1a1a1a';
+    tsCtx.lineWidth = 1;
+    tsCtx.beginPath();
+    tsCtx.moveTo(cx, cy - r*1.8);
+    tsCtx.lineTo(cx, cy - r*0.3);
     tsCtx.stroke();
   }
-  if(p.reckless){tsCtx.font='9px serif';tsCtx.fillStyle='#f97316';tsCtx.textAlign='center';tsCtx.shadowColor='#000';tsCtx.shadowBlur=3;tsCtx.fillText('⚠',p.x,p.y-p.r*2.8);tsCtx.shadowBlur=0;}
-  if(p.phase==='wait'){tsCtx.fillStyle='rgba(251,191,36,.8)';tsCtx.beginPath();tsCtx.arc(p.x,p.y-p.r*3,4,0,Math.PI*2);tsCtx.fill();}
+
+  // Indicador de atravessando: setinha amarela acima
+  if(p.phase === 'cross'){
+    tsCtx.fillStyle = '#fde047';
+    tsCtx.font = 'bold 9px serif';
+    tsCtx.textAlign = 'center';
+    tsCtx.shadowColor = '#000'; tsCtx.shadowBlur = 3;
+    tsCtx.fillText('▼', cx, cy - r*2.6);
+    tsCtx.shadowBlur = 0;
+  } else if(p.phase === 'wait'){
+    // Esperando (icone relógio)
+    tsCtx.fillStyle = 'rgba(251,191,36,.9)';
+    tsCtx.beginPath(); tsCtx.arc(cx, cy - r*2.6, 3.5, 0, Math.PI*2); tsCtx.fill();
+    tsCtx.strokeStyle = '#92400e'; tsCtx.lineWidth = 1;
+    tsCtx.beginPath(); tsCtx.arc(cx, cy - r*2.6, 3.5, 0, Math.PI*2); tsCtx.stroke();
+  }
+
+  // Imprudente: alerta vermelho
+  if(p.reckless){
+    tsCtx.font = '10px serif';
+    tsCtx.fillStyle = '#f97316';
+    tsCtx.textAlign = 'center';
+    tsCtx.shadowColor = '#000';
+    tsCtx.shadowBlur = 3;
+    tsCtx.fillText('⚠', cx, cy - r*3.2);
+    tsCtx.shadowBlur = 0;
+  }
+
   tsCtx.restore();
 }
 
@@ -2069,27 +3025,95 @@ function tsUpdateVehicles(dt){
       const sameDirH=v.horiz&&other.horiz&&Math.sign(v.dx)===Math.sign(other.dx);
       const sameDirV=!v.horiz&&!other.horiz&&Math.sign(v.dy)===Math.sign(other.dy);
       if((sameDirH||sameDirV)&&d<32&&!v.redRunner&&!v.isAmbulance)shouldStop=true;
+
+      // Veículo em sentido contrário na mesma faixa (contramão física)
+      const oppH=v.horiz&&other.horiz&&Math.sign(v.dx)!==Math.sign(other.dx);
+      const oppV=!v.horiz&&!other.horiz&&Math.sign(v.dy)!==Math.sign(other.dy);
+      // Só freiam para evitar colisão se estiverem NO MESMO eixo transversal (mesma faixa)
+      const sameAxisH=oppH&&Math.abs(v.y-other.y)<16;
+      const sameAxisV=oppV&&Math.abs(v.x-other.x)<16;
+      if((sameAxisH||sameAxisV)&&d<50&&!v.isAmbulance&&!v.isPolice&&!v.wrongWay){
+        shouldStop=true; // freiam para evitar colisão frontal
+      }
     });
 
-    v.brakeLights=shouldStop;v.stopped=shouldStop;
+    v.brakeLights=shouldStop;
+    // Suavização: targetSpeedMul vai a 0 quando deve parar, a 1 quando livre
+    v.targetSpeedMul = shouldStop ? 0 : 1;
+    if(v.currentSpeedMul===undefined) v.currentSpeedMul = 1;
+    // Frenagem mais rápida que aceleração (realismo)
+    const accelRate = v.targetSpeedMul > v.currentSpeedMul ? 1.6 : 4.5;
+    v.currentSpeedMul += (v.targetSpeedMul - v.currentSpeedMul) * Math.min(1, accelRate*dt);
+    v.stopped = v.currentSpeedMul < 0.05;
 
-    if(!v.stopped){
+    {
       const wm=tsWeather==='rain'?.75:tsWeather==='storm'?.55:tsWeather==='fog'?.7:1;
       const sm=v.speederLvl==='heavy'?2.2:v.speederLvl==='moderate'?1.4:v.speederLvl==='light'?1.2:1;
       const dm=v.drunk?.75:1;
       const am=v.isAmbulance?1.4:1;
-      const sp=v.speed*BASE*wm*sm*dm*am*tsSpeedMult;
+      const sp=v.speed*BASE*wm*sm*dm*am*tsSpeedMult*v.currentSpeedMul;
       v.x+=v.dx*sp*dt;v.y+=v.dy*sp*dt;
-      if(v.drunk){v.wobblePhase+=dt*2;v.y+=Math.sin(v.wobblePhase)*1.5*tsSpeedMult;}
+      if(v.drunk){v.wobblePhase+=dt*2;v.y+=Math.sin(v.wobblePhase)*1.5*tsSpeedMult*v.currentSpeedMul;}
+      // Atualizar timer de sinaleiro
+      if(v.signalTimer>0) v.signalTimer-=dt;
     }
 
     if(v.violationFlash>0)v.violationFlash-=dt*60;
     if(v.x<-130||v.x>tsW+130||v.y<-130||v.y>tsH+130)v.alive=false;
 
     // Verificar colisão com pedestre
-    tsPedestrians.forEach(p=>tsCheckPedestrianRight(v,p));
+    if(!v.isPolice) tsPedestrians.forEach(p=>tsCheckPedestrianRight(v,p));
+
+    // ── Colisão frontal (veículos em sentidos opostos) ───
+    if(!v.isAmbulance && !v.isPolice && !v.stopped){
+      tsVehicles.forEach(other=>{
+        if(other===v||!other.alive||other.isAmbulance||other.isPolice)return;
+        const d = tsDist(v,other);
+        if(d > 26) return;
+        // Detecta sentidos opostos
+        const oppH = v.horiz && other.horiz && Math.sign(v.dx) !== Math.sign(other.dx);
+        const oppV = !v.horiz && !other.horiz && Math.sign(v.dy) !== Math.sign(other.dy);
+        if(oppH || oppV){
+          // Colisão frontal real!
+          if(!v._collided && !other._collided){
+            v._collided = true; other._collided = true;
+            tsTotalAccidents++;
+            tsSpawnParticle(v.x,v.y,'crash');
+            tsSpawnParticle(other.x,other.y,'crash');
+            // Ambos param
+            v.stopped=true; v.currentSpeedMul=0; v.targetSpeedMul=0;
+            other.stopped=true; other.currentSpeedMul=0; other.targetSpeedMul=0;
+            v.violationFlash=180; other.violationFlash=180;
+            v.color='#b91c1c'; other.color='#b91c1c';
+            tsLog('💥','COLISÃO FRONTAL! Dois veículos colidiram em sentidos opostos!','danger');
+            tsShowNotif('💥 COLISÃO FRONTAL! Acidente grave!','danger');
+            if(tsVoiceEnabled) tsSpeak('Colisão frontal! Acidente grave na via!');
+            // Desaparecem após alguns segundos
+            setTimeout(()=>{ v.alive=false; other.alive=false; },5000);
+          }
+        }
+        // Colisão traseira (mesma direção, muito próximos)
+        const sameH = v.horiz && other.horiz && Math.sign(v.dx)===Math.sign(other.dx);
+        const sameV = !v.horiz && !other.horiz && Math.sign(v.dy)===Math.sign(other.dy);
+        if((sameH||sameV) && d<14 && !v._rearCollided && !other._rearCollided){
+          // Verifica se v está atrás de other
+          const behindH = sameH && v.x*Math.sign(v.dx) < other.x*Math.sign(other.dx);
+          const behindV = sameV && v.y*Math.sign(v.dy) < other.y*Math.sign(other.dy);
+          if(behindH||behindV){
+            v._rearCollided=true; other._rearCollided=true;
+            v.stopped=true; v.currentSpeedMul=0;
+            v.violationFlash=120;
+            tsApplyViolation(v,'UNSAFE_DISTANCE','Colisão traseira');
+            tsSpawnParticle(v.x,v.y,'crash');
+            tsLog('💥','COLISÃO TRASEIRA! Distância de segurança não respeitada.','danger');
+            setTimeout(()=>{ v._rearCollided=false; other._rearCollided=false; },6000);
+          }
+        }
+      });
+    }
   });
   tsVehicles=tsVehicles.filter(v=>v.alive);
+  tsUpdateAccidentBehaviors(dt);
 }
 
 function tsUpdatePedestrians(dt){
